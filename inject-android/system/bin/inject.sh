@@ -36,20 +36,18 @@ sebagai berikut:
   h.)  Pilih dan tekan Confirm.
   i.)  Kalau Sudah Lalu Mulai Ulang (restart HP).
   j.)  Selamat USB Debug Telah Aktif.
-  k.)  Tinggal jalankan ADB yang sudah terinstall di
-       komputer dengan membuka Terminal, kemudian ketik:
 
-          'adb start-server'
-          'adb devices'
-
-       Maka akan muncul popup di Andromax Prime.
-
-
+  
 Jika masih tidak aktif, ada cara lain sebagai berikut:
 
   a.)  Dial/Tekan *#*#257384061689#*#*
   b.)  Aktifkan \"USB Debugging\".
   c.)  Izinkan aktifkan USB Debugging pada popupnya.
+
+
+Tinggal jalankan skrip ini dengan membuka Terminal,
+maka akan muncul popup izinkan sambung USB Debugging di
+Andromax Prime.
 
 
 Special thanks to:
@@ -99,7 +97,7 @@ id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
         exit 1
     }
 
-    echo -ne "File yang dipilih: $1 \nAnda yakin? "
+    echo -ne "File yang dipilih: $(dirname $(readlink -f $1))/$(basename $1) \nAnda yakin? "
     while true
     do
         read -srn1 YN
@@ -119,8 +117,8 @@ echo -ne "NOTE:  Harap baca dahulu sebelum eksekusi
     mengeksekusi inject update.zip [ Untuk membaca cara
     mengaktifkan USB debugging, dengan mengetik ]:
       $0 --readme
- *  Apabila HP terpasang kartu SIM, pastikan HP dalam
-    Mode Pesawat.
+ *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
+    mengaktifkan mode pesawat.
 "
 pause
 
@@ -144,6 +142,11 @@ echo "Connecting to device..."
 sleep 1; echo "Please plug USB to your devices."
 $ADB wait-for-device
 echo "Connected."
+
+## Activating airplane mode
+echo "Activating airplane mode..."
+$ADB shell "settings put global airplane_mode_on 1"
+$ADB shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 ## Injecting file
 echo "Preparing version file $1 to injecting device..."

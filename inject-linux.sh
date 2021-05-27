@@ -7,7 +7,6 @@ set -e
 # File bash script inject dari Faizal Hamzah
 
 dir_0="$(dirname "$(readlink -f "$0")")"
-dir_1="$(dirname "$(readlink -f "$1")")"
 
 USAGE () {
     echo -e "Inject update.zip for Haier F17A1H
@@ -34,20 +33,18 @@ sebagai berikut:
   h.)  Pilih dan tekan Confirm.
   i.)  Kalau Sudah Lalu Mulai Ulang (restart HP).
   j.)  Selamat USB Debug Telah Aktif.
-  k.)  Tinggal jalankan ADB yang sudah terinstall di
-       komputer dengan membuka Terminal, kemudian ketik:
 
-          'adb start-server'
-          'adb devices'
-
-       Maka akan muncul popup di Andromax Prime.
-
-
+  
 Jika masih tidak aktif, ada cara lain sebagai berikut:
 
   a.)  Dial/Tekan *#*#257384061689#*#*
   b.)  Aktifkan \"USB Debugging\".
   c.)  Izinkan aktifkan USB Debugging pada popupnya.
+
+
+Tinggal jalankan skrip ini dengan membuka Terminal,
+maka akan muncul popup izinkan sambung USB Debugging di
+Andromax Prime.
 
 
 Special thanks to:
@@ -121,13 +118,14 @@ esac
         exit 1
     }
 
-    ( $DIALOG                         \
-      --yesno                         \
-"File yang dipilih:
-$dir_1/$1
-Anda yakin?" 9 63                     \
-      --yes-button 'Ya'               \
-      --no-button 'Tidak'             \
+    ( $DIALOG                                 \
+      --yesno                                 \
+"Anda yakin? File yang dipilih:
+
+$(dirname $(readlink -f $1))/$(basename $1)"  \
+     11 63                                    \
+      --yes-button 'Ya'                       \
+      --no-button 'Tidak'                     \
       3>&1 1>&2 2>&3
     ) || exit 1
 } || USAGE
@@ -140,8 +138,8 @@ $DIALOG                                                      \
     mengeksekusi inject update.zip [ Untuk membaca cara
     mengaktifkan USB debugging, dengan mengetik ]:
       $0 --readme
- *  Apabila HP terpasang kartu SIM, pastikan HP dalam
-    Mode Pesawat." 11 63
+ *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
+    mengaktifkan mode pesawat." 11 63
 
 ## Checking ADB programs
 ADB="adb"
@@ -152,7 +150,7 @@ ADB="adb"
       ADB="$a/adb"
   done
   sleep 0.5; echo 50
-  which $ADB 2>&1 || ERROR=1
+  which $ADB >/dev/null 2>&1 || ERROR=1
   sleep 0.7; echo 90
   sleep 0.1; echo 100
 } | $DIALOG --gauge "Checking ADB program..." 6 63 0
@@ -163,13 +161,8 @@ do
     [[ $ERROR -eq 1 ]] && \
     { echo 0; sleep 2
       echo 20; sleep 1
-      ZIP="/var/tmp/android-platform-tools.zip"
-      ADB_LINK=https://dl.google.com/android/repository/platform-tools-latest-linux.zip
-      wget -qO "$ZIP" $ADB_LINK
-      [ $? -eq 1 ] && {
-          rm "$ZIP"  >/dev/null 2>&1
-          continue
-      }
+      wget -qO "/var/tmp/android-platform-tools.zip" \
+               https://dl.google.com/android/repository/platform-tools-latest-linux.zip
       echo 60; sleep 0.5
       unzip -qo "$ZIP" platform-tools/adb \
             -d "/var/tmp/"
@@ -181,7 +174,7 @@ do
       echo 100; sleep 2
       ADB="$dir_0/adb"
     } | $DIALOG --gauge "Downloading ADB program..." 8 63
-    which $ADB 2>&1 && break
+    which $ADB >/dev/null 2>&1 && break
 done
 
 ## Starting ADB service
@@ -193,6 +186,13 @@ start-adb
 { $ADB wait-for-device 2>&1
   echo 100
 } | $DIALOG --gauge "Please plug USB to your devices." 6 63 50
+
+## Activating airplane mode
+{ $ADB shell "settings put global airplane_mode_on 1" 2>&1
+  echo 50
+  $ADB shell "am broadcast -a android.intent.action.AIRPLANE_MODE" 2>&1
+  echo 100
+} | $DIALOG --gauge "Activating airplane mode..." 6 63 0
 
 ## Injecting file
 { sleep 2; echo 100
@@ -207,10 +207,10 @@ Injecting...
 XXX
 eof
       (( COUNTER+=10 ))
-      [[ $COUNTER -eq 90 ]] && break
+      [[ $COUNTER -eq 80 ]] && break
       sleep 0.5
   done
-  echo 80
+  echo 81
   $ADB push "$1" /sdcard/adupsfota/update.zip 2>&1
   echo 95; sleep 0.5
   echo 99; sleep 0.1
@@ -229,9 +229,8 @@ XXX
 eof
       sleep 1
       (( COUNTER+=10 ))
-      [[ $COUNTER -eq 90 ]] && break
+      [[ $COUNTER -eq 100 ]] && break
   done
-  echo 100
 } | $DIALOG --gauge "Verifying file..." 6 63 0
 
 ## Calling FOTA update
@@ -291,6 +290,6 @@ eof
 } | $DIALOG --gauge "Updating..." 6 63 0
 
 ## Complete
-$DIALOG --msgbox "           Proses telah selesai" 6 48
+$DIALOG --msgbox "\n           Proses telah selesai" 8 48
 kill-adb
 exit 0
