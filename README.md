@@ -30,3 +30,13 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=https://www.instagram.com/thefirefoxflasher_>Instagram</a></li>
 <li><a href=https://wa.me/6288228419117>WhatsApp</a></li>
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
+
+<h2>Changelog:</h2>
+<h3>v1.1</h3>
+<ol>
+<li>Menambahkan batasan versi Windows, PowerShell, dan dotnet Framework</li>
+<li>Memperbaiki Download Manager pada inject-win.bat</li>
+<li>Menambahkan fungsi mengaktifkan mode pesawat secara otomatis</li>
+</ol>
+<h3>v1.0</h3>
+<ol>Initial release</ol>
