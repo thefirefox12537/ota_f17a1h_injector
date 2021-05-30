@@ -32,6 +32,16 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
 
 <h2>Changelog:</h2>
+<h3>v1.1.1</h3>
+<ol>
+<li>Pembaharuan minor</li>
+<li>Menambahkan batasan versi kernel Linux, distro Linux dan sistem arsitektur prosesor pada inject-linux.sh</li>
+<li>Penambahan UI dialog di inject-linux.sh (menggunakan KDialog jika berada dalam lingkungan KDE Plasma)</li>
+<li>Menambahkan batasan versi Android, dan support USB Host OTG pada inject-android</li>
+<li>Menambahkan batasan Visual C++ 2015 Redist pada inject-win.bat</li>
+<li>Menambahkan fungsi instalasi driver ADB pada inject-win.bat</li>
+<li>Perubahan fungsi pemeriksa perangkat bila perangkat itu Andromax Prime/Haier F17A1H</li>
+</ol>
 <h3>v1.1</h3>
 <ol>
 <li>Menambahkan batasan versi Windows, PowerShell, dan dotnet Framework</li>
