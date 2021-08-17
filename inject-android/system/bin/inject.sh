@@ -1,6 +1,5 @@
 #!/system/bin/sh
-set -e
-
+#
 # Inject update.zip script - Andromax Prime F17A1H
 #
 # File update.zip dan batch script inject root dari Adi Subagja
@@ -9,7 +8,14 @@ set -e
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
+
 basedir="$(dirname "$(readlink -f "$0")")"
+for file in "$1" "$2"
+do [ -f "$file" ] && {
+    FILE="$(basename "$file")"
+    FULLPATH="$(dirname "$(readlink -f "$file")")/$FILE"
+}
+done
 
 USAGE () {
     echo -e "Inject update.zip for Haier F17A1H
@@ -17,8 +23,9 @@ USAGE () {
 USAGE: $0 <update.zip file>
 
 Additional arguments are maybe to know:
-  -h, --help    Show help information for this script.
-  --readme      Show read-me (advanced help)."
+  -h, --help         Show help information for this script.
+  -n, --non-market   Inject with install non market (root.zip).
+  --readme           Show read-me (advanced help)."
     exit 1
 }
 
@@ -85,14 +92,6 @@ id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
     exit 1
 }
 
-echo "+ OS Name: $(getprop ro.build.id)"
-echo "+ Host: $(getprop ro.product.brand) $(getprop ro.product.model)"
-echo "+ Android: $(getprop ro.build.version.release) (SDK $(getprop ro.build.version.sdk))"
-echo "+ Kernel: $(uname -sr)"
-echo "+ Architecture: $(uname -m)"
-echo "+ Magisk installed: $([ -e "$MAGISK" ] && echo YES || echo NO)"
-echo
-
 [[ $(getprop ro.build.version.release) < "4.4"* \
 || $(getprop ro.build.version.sdk) -lt 19 ]] && {
     echo "This script cannot be run in older Android version."
@@ -106,26 +105,22 @@ echo
     echo "This script requires Magisk."
     exit 1
 }
-[ ! -e /system/etc/permissions/android.hardware.usb.host.xml ] && {
-    echo "This script requirements your devices installed USB Host."
-    exit 1
-}
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ ! -f "$1" ] && {
+    [ -z $FILE ] && {
         echo "File not found."
         exit 1
     }
 
-    echo -ne "File yang dipilih: \n$(dirname "$(readlink -f "$1")")/$(basename "$1") \nAnda yakin? "
+    echo -ne "File yang dipilih: \n$FULLPATH \nAnda yakin? "
     while true
     do
         read -srn1 YN
         echo
         case $YN in
-            y | Y )  break ;;
-            n | N )  exit 1 ;;
+            [Yy]* )  break ;;
+            [Nn]* )  exit 1 ;;
             * )      echo -ne "Anda yakin? " ;;
         esac
     done
@@ -162,15 +157,9 @@ echo "Connected."
 
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
-for a in ro.product.device ro.build.product
-do
-    for device in $(adb shell "getprop $a")
-    do [ "$device" != "grouper" ] && ERROR=1
-    done
-done
-adb shell "getprop ro.build.id" > /dev/nulll 2>&1 | grep "F17A1H" || set ERROR=1
-[[ $ERROR -eq 1 ]] && {
-    echo "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
+FOTA_DEVICE="$(adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
+[ "$FOTA_DEVICE" != "Andromax Prime" ] && {
+    echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     exit 1
 }
 
@@ -180,16 +169,20 @@ adb shell "settings put global airplane_mode_on 1"
 adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 ## Injecting file
-echo "Preparing version file $1 to injecting device..."
-adb push "$1" /sdcard/adupsfota/update.zip
+echo "Preparing version file $FILE to injecting device..."
+adb push $FILE /sdcard/adupsfota/update.zip
 echo "Checking file..."
 echo "Verifying file..."
 sleep 12
 
 ## Calling FOTA update
 echo "Checking updates..."
-adb shell "settings put global install_non_market_apps 1"
-adb shell "settings put secure install_non_market_apps 1"
+[ "$1" == "--non-market" ] && NON_MARKET=1
+[ "$2" == "--non-market" ] && NON_MARKET=1
+[[ "$NON_MARKET" ]] && {
+    adb shell "settings put global install_non_market_apps 1"
+    adb shell "settings put secure install_non_market_apps 1"
+}
 
 echo "Cleaning FOTA updates..."
 adb shell "pm clear com.smartfren.fota"
@@ -215,8 +208,8 @@ do
     read -srn1 YN
     echo
     case $YN in
-        y | Y )  break ;;
-        n | N )  adb shell "rm /sdcard/adupsfota/update.zip"
+        [Yy]* )  break ;;
+        [Nn]* )  adb shell "rm /sdcard/adupsfota/update.zip"
                  kill-adb
                  exit 1
                  ;;
@@ -227,12 +220,9 @@ done
 ## Start updating
 echo "Updating..."
 adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-COUNTER=0
+COUNTER=1
 while :
-do
-    adb shell "input keyevent 20"
-    (( COUNTER+=1 ))
-    [[ $COUNTER -eq 20 ]] && break
+do adb shell "input keyevent 20"; (( COUNTER+=1 )); [[ $COUNTER -gt 20 ]] && break
 done
 adb shell "input keyevent 23"
 sleep 1
