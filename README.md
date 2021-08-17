@@ -3,9 +3,10 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 
 <h2>Download:</h2>
 <ol>
-<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v1.0/inject-android.zip>Android Platform</a></li> (harus dalam kondisi root Magisk dan terpasang module ADB)
-<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v1.0/inject-linux.sh>Linux Platform</a></li>
-<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v1.0/inject-win.bat>Windows Platform</a></li>
+<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v.1.2.0/inject-android.zip>Android Platform</a></li> (harus dalam kondisi root Magisk dan terpasang module ADB)
+<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v.1.2.0/inject-linux.sh>Linux Platform</a></li>
+<li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/download/v.1.2.0/inject-win.bat>Windows Platform</a></li><br/>
+Bila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan file update_injectroot.zip (via <a href=https://mega.nz/file/ZNMEERzA#Wz7Km4PcSx0v1fG6Knuw0S2SF8oQlN4pr02NswiIMy0>MEGA</a>) dan support di segala versi firmware Haier Andromax Prime.
 </ol>
 
 <h2>Cara menggunakan?</h2>
@@ -32,6 +33,12 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
 
 <h2>Changelog:</h2>
+<h3>v1.2.0</h3>
+<ol>
+<li>Menghapus batasan Visual C++ 2015 Redist pada inject-win.bat</li>
+<li>Penambahan fitur otomatis aktifkan Mode pesawat, sehingga tidak perlu mengaktifkannya secara manual kalau kalian lupa.</li>
+<li>Penambahan perintah --non-market untuk inject update_injectroot.zip (File root)</li>
+</ol>
 <h3>v1.1.1</h3>
 <ol>
 <li>Pembaharuan minor</li>
