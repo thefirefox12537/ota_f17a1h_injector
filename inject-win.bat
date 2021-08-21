@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         08/14/2021  2:02am
+@ :: Date/Time Modified:         08/21/2021  7:00pm
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,2,0
-@ ::    Product Version:   1,2,0
+@ ::    File version:      1,2,1
+@ ::    Product Version:   1,2,1
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.2.0
+@ ::    FileVersion:       1.2.1
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.2.0
+@ ::    ProductVersion:    1.2.1
 @ ::
 
 
@@ -90,14 +90,14 @@ do if "%WINVER%" == "%%v"  (
 for /f %%v in ('powershell -NoProfile -Command "(Get-Host).Version.Major"  2^> nul') ^
 do set "PSVER_MAJOR=%%v"
 if %PSVER_MAJOR% LSS 4  (
-    set "MESSAGE_ERROR=This script requirements Windows PowerShell version 4.0"
+    set "MESSAGE_ERROR=This script requirements Windows Module Framework (PowerShell) version 4.0"
     goto :error
 )
 
 for /f "skip=2 tokens=3" %%v in ('reg query "HKLM\SOFTWARE\Microsoft\Net Framework Setup\NDP\v4\Full" /v Version  2^> nul') ^
 do set "DOTNETFX_VER=%%v"
 if "%DOTNETFX_VER%" LSS "4.5"  (
-    set "MESSAGE_ERROR=This script requirements .NET Framework 4.5 or later"
+    set "MESSAGE_ERROR=This script requirements Microsoft .NET Framework version 4.5 or later"
     goto :error
 )
 
@@ -160,7 +160,7 @@ echo Checking ADB Interface driver installed...
 
 :: Downloading ADB Interface driver
 :drivernotinstalled
-where /r "%SystemRoot%\System32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
+where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
 if %ERRORLEVEL% NEQ 0  (
     del /q "%temp%\usb_driver.zip"
     echo Downloading ADB Interface driver...
@@ -169,7 +169,9 @@ if %ERRORLEVEL% NEQ 0  (
     echo Extracting ADB Interface driver...
     call :unzip_script "%temp%\usb_driver.zip" "%temp%\"
     powershell -NoProfile -Command ^
-    Start-Process PnPUtil.exe -ArgumentList '/install /add-driver "%temp%\usb_driver\android_winusb.inf"' -verb RunAs
+    Start-Process PnPUtil.exe ^
+      -Wait -WindowStyle hidden -Verb runas ^
+      -ArgumentList '/install /add-driver "%temp%\usb_driver\android_winusb.inf"'
 
     rd /s /q "%temp%\usb_driver"  > nul 2>&1
     del /q "%temp%\usb_driver.zip"
@@ -249,11 +251,11 @@ if %ret% EQU 7  goto kill_adb
 :updating
 echo Updating...
 .\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (1, 1, 20) do .\adb shell "input keyevent 20"
+for /l %%a in (0, 1, 20) do .\adb shell "input keyevent 20"
 .\adb shell "input keyevent 23"
 
 :: Complete
-> "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox ^("Proses telah selesai", vbOKOnly^) )
+> "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^) )
 cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
 del /q "%temp%\dialog.vbs"  > nul 2>&1
 
@@ -347,7 +349,7 @@ call :end_of_exit
 @ goto :eof
 
 :error
-> "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox ^("%MESSAGE_ERROR%", vbCritical^) )
+> "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("%MESSAGE_ERROR%", vbCritical^) )
 cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
 del /q "%temp%\dialog.vbs"  > nul 2>&1
 call :end_of_exit
@@ -366,7 +368,9 @@ del /q "%temp%\unzip.vbs"  > nul 2>&1
 :download_script
 powershell -NoProfile -Command ^
 $ProgressPreference = 'SilentlyContinue'; ^
-Invoke-WebRequest -uri %2 -OutFile %1
+Invoke-WebRequest ^
+  -uri %2 ^
+  -OutFile %1
 @ goto :eof
 
 
