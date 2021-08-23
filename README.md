@@ -59,10 +59,9 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <h2>Changelog:</h2>
 <h3>v1.2.1</h3>
 <ol>Pembaharuan minor</ol>
-<h3>v1.2.0</h3>
+<h3>v1.2</h3>
 <ol>
 <li>Menghapus batasan Visual C++ 2015 Redist pada inject-win.bat</li>
-<li>Penambahan fitur otomatis aktifkan Mode pesawat, sehingga tidak perlu mengaktifkannya secara manual kalau kalian lupa.</li>
 <li>Penambahan perintah --non-market untuk inject update_injectroot.zip (File root)</li>
 </ol>
 <h3>v1.1.1</h3>
