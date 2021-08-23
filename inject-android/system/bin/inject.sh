@@ -5,9 +5,7 @@
 # File update.zip dan batch script inject root dari Adi Subagja
 # File bash script inject dari Faizal Hamzah
 
-MAGISKDIR="/data/adb"
-MAGISK="$MAGISKDIR/magisk"
-MAGISK_MODULE="$MAGISKDIR/modules"
+set -e
 
 basedir="$(dirname "$(readlink -f "$0")")"
 for file in "$1" "$2"
@@ -16,6 +14,10 @@ do [ -f "$file" ] && {
     FULLPATH="$(dirname "$(readlink -f "$file")")/$FILE"
 }
 done
+
+MAGISKDIR="/data/adb"
+MAGISK="$MAGISKDIR/magisk"
+MAGISK_MODULE="$MAGISKDIR/modules"
 
 USAGE () {
     echo -e "Inject update.zip for Haier F17A1H
@@ -92,7 +94,7 @@ id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
     exit 1
 }
 
-[[ $(getprop ro.build.version.release) -lt 5 \
+[[ $(getprop ro.build.version.release) < "5.0"* \
 || $(getprop ro.build.version.sdk) -lt 21 ]] && {
     echo "This script cannot be run in older Android version."
     exit 1
@@ -108,7 +110,7 @@ id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z $FILE ] && {
+    [ -z "$FILE" ] && {
         echo "File not found."
         exit 1
     }

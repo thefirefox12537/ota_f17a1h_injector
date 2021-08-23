@@ -5,6 +5,8 @@
 # File update.zip dan batch script inject root dari Adi Subagja
 # File bash script inject dari Faizal Hamzah
 
+set -e
+
 basedir="$(dirname "$(readlink -f "$0")")"
 for file in "$1" "$2"
 do [ -f "$file" ] && {
@@ -123,7 +125,7 @@ esac
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z $FILE ] && {
+    [ -z "$FILE" ] && {
         echo "File not found."
         exit 1
     }

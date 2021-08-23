@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         08/21/2021  7:00pm
+@ :: Date/Time Modified:         08/23/2021  6:00am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,2,1
-@ ::    Product Version:   1,2,1
+@ ::    File version:      1,2,2
+@ ::    Product Version:   1,2,2
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.2.1
+@ ::    FileVersion:       1.2.2
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.2.1
+@ ::    ProductVersion:    1.2.2
 @ ::
 
 
