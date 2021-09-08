@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         08/23/2021  6:00am
+@ :: Date/Time Modified:         09/07/2021 12:25pm
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,2,2
-@ ::    Product Version:   1,2,2
+@ ::    File version:      1,2,3
+@ ::    Product Version:   1,2,3
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.2.2
+@ ::    FileVersion:       1.2.3
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.2.2
+@ ::    ProductVersion:    1.2.3
 @ ::
 
 
@@ -61,19 +61,23 @@ if not errorlevel 1  set LOWERNT=1
 if "%LOWERNT%" == "1" goto winnt
 
 if not defined LOWERNT  setlocal EnableExtensions EnableDelayedExpansion
-for %%p in (-h  --help) do if "%1" == "%%p"  goto USAGE
-if "%1" == "--readme"  goto README
 
 set "basedir=%~dp0"
 set "basedir=%basedir:~0,-1%"
-if [%1] == []  goto USAGE
+if %1!==!  goto USAGE
+
+for %%p in (-h  --help) do if %1!==%%p!  goto USAGE
+if %1!==--readme!  goto README
 
 if exist %1  set "FILE=%1" & set "FULLPATH=%~dpnx1"
 if exist %2  set "FILE=%2" & set "FULLPATH=%~dpnx2"
-if not defined FILE (
+if not defined FILE  (
     echo File not found.
     goto end_of_exit
 )
+
+set "FILE=%FILE:"=%"
+set "FULLPATH=%FULLPATH:"=""%"
 
 :: Checking your system if approriate with requirements
 :: Please wait at the moments.
@@ -210,15 +214,15 @@ echo Activating airplane mode...
 :: Injecting file
 :injecting
 echo Preparing version file %FILE% to injecting device...
-.\adb push %FILE% /sdcard/adupsfota/update.zip
+.\adb push "%FILE%" /sdcard/adupsfota/update.zip
 echo Checking file...
 echo Verifying file...
 timeout /NOBREAK /T 12  > nul 2>&1
 
 :: Calling FOTA update
 echo Checking updates...
-if "%1" == "--non-market"  set "NON_MARKET=1"
-if "%2" == "--non-market"  set "NON_MARKET=1"
+if %1!==--non-market!  set "NON_MARKET=1"
+if %2!==--non-market!  set "NON_MARKET=1"
 if defined NON_MARKET  (
     .\adb shell "settings put global install_non_market_apps 1"
     .\adb shell "settings put secure install_non_market_apps 1"

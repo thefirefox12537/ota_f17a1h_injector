@@ -1,5 +1,5 @@
-# Haier_F17A1H OTA Updater Injector for Android
-Tool ini berguna bagi pengguna Andromax Prime (Haier F17A1H) yang mau di root tapi tidak memiliki PC/Laptop.
+# OTA Haier F17A1H / Andromax Prime Injector Tool for Android
+Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update secara offline atau ingin di root tapi tidak memiliki PC/Laptop.
 
 <b>ADB and Fastboot for Android NDK</b> Module is required if the device is rooted.
 

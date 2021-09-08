@@ -5,13 +5,11 @@
 # File update.zip dan batch script inject root dari Adi Subagja
 # File bash script inject dari Faizal Hamzah
 
-set -e
-
 basedir="$(dirname "$(readlink -f "$0")")"
 for file in "$1" "$2"
 do [ -f "$file" ] && {
-    FILE="$(basename "$file")"
-    FULLPATH="$(dirname "$(readlink -f "$file")")/$FILE"
+    FILE="$file"
+    FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
 }
 done
 
@@ -186,7 +184,7 @@ sleep 1; echo "Please plug USB to your devices."
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
 FOTA_DEVICE="$(./adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "$FOTA_DEVICE" != "Andromax F17A1H" ] && {
+[ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
     [[ "$DIALOG" == "kdialog" ]] && \
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
     $DIALOG -msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
@@ -200,7 +198,7 @@ echo "Activating airplane mode..."
 
 ## Injecting file
 echo "Preparing version file $FILE to injecting device..."
-./adb push $FILE /sdcard/adupsfota/update.zip
+./adb push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
 echo "Verifying file..."
 sleep 12

@@ -5,21 +5,22 @@
 # File update.zip dan batch script inject root dari Adi Subagja
 # File bash script inject dari Faizal Hamzah
 
-set -e
-
 basedir="$(dirname "$(readlink -f "$0")")"
 for file in "$1" "$2"
 do [ -f "$file" ] && {
-    FILE="$(basename "$file")"
-    FULLPATH="$(dirname "$(readlink -f "$file")")/$FILE"
+    FILE="$file"
+    FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
 }
 done
 
+ID="$(id)"
+ID="${ID#*=}"; ID="${ID%%\(*}"; ID="${ID%% *}"
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
 
-USAGE () {
+USAGE()
+{
     echo -e "Inject update.zip for Haier F17A1H
 
 USAGE: $0 <update.zip file>
@@ -31,7 +32,8 @@ Additional arguments are maybe to know:
     exit 1
 }
 
-README () {
+README()
+{
     echo -e "Untuk mengaktifkan Debugging USB pada Andromax Prime
 sebagai berikut:
 
@@ -66,17 +68,17 @@ Special thanks to:
     exit 1
 }
 
-start-adb () {
+start-adb() {
     echo "Starting ADB services..."
     adb start-server
 }
 
-kill-adb () {
+kill-adb() {
     echo "Killing ADB services..."
     adb kill-server
 }
 
-pause () {
+pause() {
     echo -n "Press any key to continue..."
     read -srn1; echo
 }
@@ -88,14 +90,12 @@ case $1 in
     * )                ;;
 esac
 
-id="$(id)"; id="${id#*=}"; id="${id%%\(*}"; id="${id%% *}"
-[ "$id" != "0" ] && {
+[[ $ID -ne 0 ]] && {
     echo "This script only allow in root mode."
     exit 1
 }
 
-[[ $(getprop ro.build.version.release) < "5.0"* \
-|| $(getprop ro.build.version.sdk) -lt 21 ]] && {
+[[ $(getprop ro.build.version.sdk) -lt 21 ]] && {
     echo "This script cannot be run in older Android version."
     exit 1
 }
@@ -142,7 +142,7 @@ pause
 
 ## Checking ADB programs
 echo "Checking ADB program..."
-[ -e "$MAGISK_MODULE/adb-ndk/system/bin/adb" ] && \
+[ -d "$MAGISK_MODULE/adb-ndk" ] && \
 echo "ADB program was availabled on this device." || {
     echo -e "ADB program cannot be found on this device. \nMake sure ADB and Fastboot module already installed."
     exit 1
@@ -160,7 +160,7 @@ echo "Connected."
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
 FOTA_DEVICE="$(adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "$FOTA_DEVICE" != "Andromax Prime" ] && {
+[ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     exit 1
 }
@@ -172,7 +172,7 @@ adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 ## Injecting file
 echo "Preparing version file $FILE to injecting device..."
-adb push $FILE /sdcard/adupsfota/update.zip
+adb push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
 echo "Verifying file..."
 sleep 12
