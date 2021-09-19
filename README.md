@@ -42,6 +42,24 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 <li><b>Windows:</b><p>
   Buka Command Prompt atau Powershell di menu Start. lalu masuk ke direktori tempat skrip <b>inject-win.bat</b> berada, jalankan dengan ketik: <pre>inject-win.bat < file update.zip ></pre></li>
 </ol>
+<p>
+  
+Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini:
+  <ol>
+  <li><b>Android (Termux):</b><p>
+  <pre>su -c "bash <(wget -qO- http://raw.githubusercontent.com/thefirefox12537/ota_f17a1h_injector/main/inject-android/system/bin/inject.sh)" </pre>
+  </li>
+  <li><b>Linux:</b><p>
+  <pre>bash <(wget -qO- http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh) </pre>
+  </li>
+  <li><b>Windows (Command Prompt - Wajib menggunakan Windows PowerShell versi 4.0):</b><p>
+  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', '%tmp%\run.bat') && "%tmp%\run.bat" </pre>
+  </li>
+  <li><b>Windows (PowerShell versi 4.0 keatas):</b><p>
+  <pre>(New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', "$env:tmp\run.bat"); & "$env:tmp\run.bat" </pre>
+  </li>
+  </ol>
+Setelah salin, tempelkan (Paste) ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject.<p>
 
 Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Andromax Prime), bisa ketik sebagai berikut:
 <ol>
