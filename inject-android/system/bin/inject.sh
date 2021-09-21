@@ -137,6 +137,12 @@ echo -ne "NOTE:  Harap baca dahulu sebelum eksekusi
        $0 --readme
  *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
     mengaktifkan mode pesawat.
+
+Perlu diperhatikan:
+   Segala kerusakan/apapun yang terjadi itu diluar tanggung
+   jawab pembuat file ini serta tidak ada kaitannya dengan
+   pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
+   update secara daring melalui updater resmi.
 "
 pause
 
@@ -197,29 +203,6 @@ adb shell "input keyevent 20"
 adb shell "input keyevent 22"
 adb shell "input keyevent 23"
 
-## Confirmation
-echo -ne "Persetujuan pengguna
-
-Segala kerusakan/apapun yang terjadi itu diluar tanggung
-jawab pembuat file ini serta tidak ada kaitannya dengan
-pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
-update secara daring melalui updater resmi.
-
-Lanjutkan? "
-while true
-do
-    read -srn1 YN
-    echo
-    case $YN in
-        [Yy]* )  break ;;
-        [Nn]* )  adb shell "rm /sdcard/adupsfota/update.zip"
-                 kill-adb
-                 exit 1
-                 ;;
-        * )      echo -ne "Lanjutkan? " ;;
-    esac
-done
-
 ## Start updating
 echo "Updating..."
 adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
@@ -228,7 +211,8 @@ while :
 do adb shell "input keyevent 20"; (( COUNTER+=1 )); [[ $COUNTER -gt 20 ]] && break
 done
 adb shell "input keyevent 23"
-sleep 1
+sleep 10
+./adb wait-for-device  > /dev/null 2>&1
 
 ## Complete
 echo "Proses telah selesai"

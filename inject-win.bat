@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         09/07/2021 12:25pm
+@ :: Date/Time Modified:         09/22/2021  2:48am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,2,3
-@ ::    Product Version:   1,2,3
+@ ::    File version:      1,3,0
+@ ::    Product Version:   1,3,0
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.2.3
+@ ::    FileVersion:       1.3.0
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.2.3
+@ ::    ProductVersion:    1.3.0
 @ ::
 
 
@@ -124,17 +124,22 @@ if %ret% EQU 7  goto end_of_exit
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
     echo Wsh.Echo MsgBox^( _
-    echo   " *  Harap aktifkan USB Debugging terlebih dahulu sebelum" + vbCrLf + _
-    echo   "     mengeksekusi inject update.zip [ Untuk membaca cara" + vbCrLf + _
-    echo   "     mengaktifkan USB debugging, dengan mengetik ]:" + vbCrLf + _
+    echo   " *  Harap aktifkan USB Debugging terlebih dahulu sebelum mengeksekusi" + vbCrLf + _
+    echo   "     inject update.zip [Untuk membaca cara mengaktifkan USB debugging," + vbCrLf + _
+    echo   "     dengan mengetik]:" + vbCrLf + _
     echo   vbCrLf + _
-    echo   vbTab + "%~nx0 --readme" + vbCrLf + _
+    echo   "           %~nx0 --readme" + vbCrLf + _
     echo   vbCrLf + _
-    echo   " *  Apabila HP terpasang kartu SIM, skrip akan terotomatis" + vbCrLf + _
-    echo   "     mengaktifkan Mode Pesawat.", _
-    echo   vbOKOnly, _
-    echo   "NOTE:  Harap baca dahulu sebelum eksekusi" _
-    echo ^) 
+    echo   " *  Apabila HP terpasang kartu SIM, skrip akan terotomatis mengaktifkan" + vbCrLf + _
+    echo   "     Mode Pesawat." + vbCrLf + _
+    echo   vbCrLf + _
+    echo   "NOTE:" + vbTab + "Harap baca dahulu sebelum eksekusi. Segala kerusakan/" + vbCrLf + _
+    echo   vbTab + "apapun yang terjadi itu diluar tanggung jawab pembuat file ini" + vbCrLf + _
+    echo   vbTab + "serta tidak ada kaitannya dengan pihak manapun. Untuk lebih" + vbCrLf + _
+    echo   vbTab + "aman tanpa resiko, dianjurkan update secara daring melalui" + vbCrLf + _
+    echo   vbTab + "updater resmi.", _
+    echo   vbOKOnly _
+    echo ^)
 )
 cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
 del /q "%temp%\dialog.vbs"  > nul 2>&1
@@ -148,16 +153,27 @@ echo Checking ADB program...
 if not exist "%basedir%\adb.exe"  (
     del /q "%temp%\platform-tools.zip"  > nul 2>&1
     echo Downloading Android SDK Platform Tools...
-    call :download_script "%temp%\platform-tools.zip" https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip
+    powershell -NoProfile -Command ^
+    $ProgressPreference = 'SilentlyContinue'; ^
+    Invoke-WebRequest ^
+      -uri https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip ^
+      -OutFile '%temp%\platform-tools.zip'
 
     echo Extracting Android SDK Platform Tools...
-    call :unzip_script "%temp%\platform-tools.zip" "%temp%\"
+    powershell -NoProfile -Command ^
+    Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    [void][System.IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\platform-tools.zip', '%temp%\'^)
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d"  (
     for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\"  > nul 2>&1
     rd /s /q "%temp%\%%d"  > nul 2>&1
     )
     del /q "%temp%\platform-tools.zip"  > nul 2>&1
-    echo ADB program was successfully placed.
+    if not exist "%basedir%\adb.exe"  (
+        echo Failed getting ADB program. Please try again, make sure your network connected.
+        @ goto :eof
+    ) else  (
+        echo ADB program was successfully placed.
+    )
 ) else  ( echo ADB program was availabled on the computer or this folder. )
 
 echo Checking ADB Interface driver installed...
@@ -166,20 +182,32 @@ echo Checking ADB Interface driver installed...
 :drivernotinstalled
 where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
 if %ERRORLEVEL% NEQ 0  (
-    del /q "%temp%\usb_driver.zip"
+    del /q "%temp%\usb_driver.zip"  > nul 2>&1
     echo Downloading ADB Interface driver...
-    call :download_script "%temp%\usb_driver.zip" https://dl.google.com/android/repository/latest_usb_driver_windows.zip
+    powershell -NoProfile -Command ^
+    $ProgressPreference = 'SilentlyContinue'; ^
+    Invoke-WebRequest ^
+      -uri https://dl.google.com/android/repository/latest_usb_driver_windows.zip ^
+      -OutFile '%temp%\usb_driver.zip'
 
     echo Extracting ADB Interface driver...
-    call :unzip_script "%temp%\usb_driver.zip" "%temp%\"
+    powershell -NoProfile -Command ^
+    Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    [void][System.IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\usb_driver.zip', '%temp%\'^)
     powershell -NoProfile -Command ^
     Start-Process PnPUtil.exe ^
       -Wait -WindowStyle hidden -Verb runas ^
-      -ArgumentList '/install /add-driver "%temp%\usb_driver\android_winusb.inf"'
+      -ArgumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
 
     rd /s /q "%temp%\usb_driver"  > nul 2>&1
-    del /q "%temp%\usb_driver.zip"
-    echo Driver successfully installed.
+    del /q "%temp%\usb_driver.zip"  > nul 2>&1
+    where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
+    if %ERRORLEVEL% NEQ 0  (
+        echo Failed installing driver. Please try again.
+        @ goto :eof
+    ) else  (
+        echo Driver successfully installed.
+    )
 ) else  ( echo Driver already installed. )
 
 :: Starting ADB service
@@ -238,25 +266,14 @@ echo Manipulating FOTA update...
 .\adb shell "input keyevent 22"
 .\adb shell "input keyevent 23"
 
-:: Confirmation
-call :wscript dialog.vbs
->> "%temp%\dialog.vbs" (
-    echo Wsh.Echo MsgBox^( _
-    echo   "Segala kerusakan/apapun yang terjadi itu diluar tanggung jawab pembuat file ini serta tidak ada kaitannya dengan pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan update secara daring melalui updater resmi.", _
-    echo   vbYesNo, _
-    echo   "Persetujuan pengguna" _
-    echo ^)
-)
-for /f %%i in ('cscript "%temp%\dialog.vbs" //nologo //e:vbscript') do set ret=%%i
-del /q "%temp%\dialog.vbs"  > nul 2>&1
-if %ret% EQU 7  goto kill_adb
-
 :: Start updating
 :updating
 echo Updating...
 .\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
 for /l %%a in (0, 1, 20) do .\adb shell "input keyevent 20"
 .\adb shell "input keyevent 23"
+timeout /nobreak /t 10  > nul 2>&1
+.\adb wait-for-device  > nul 2>&1
 
 :: Complete
 > "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^) )
@@ -357,24 +374,6 @@ call :end_of_exit
 cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
 del /q "%temp%\dialog.vbs"  > nul 2>&1
 call :end_of_exit
-@ goto :eof
-
-:unzip_script
-call :wscript unzip.vbs
->> "%temp%\unzip.vbs" (
-    echo Set objShell = CreateObject^("Shell.Application"^)
-    echo objShell.NameSpace^(%2^).CopyHere^(objShell.NameSpace^(%1^).Items^)
-)
-cscript "%temp%\unzip.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\unzip.vbs"  > nul 2>&1
-@ goto :eof
-
-:download_script
-powershell -NoProfile -Command ^
-$ProgressPreference = 'SilentlyContinue'; ^
-Invoke-WebRequest ^
-  -uri %2 ^
-  -OutFile %1
 @ goto :eof
 
 

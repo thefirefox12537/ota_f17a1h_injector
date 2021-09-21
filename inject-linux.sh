@@ -153,7 +153,13 @@ $DIALOG                                                      \
     mengaktifkan USB debugging, dengan mengetik ]:
        $0 --readme
  *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
-    mengaktifkan mode pesawat." 11 63
+    mengaktifkan mode pesawat.
+
+Perlu diperhatikan:
+   Segala kerusakan/apapun yang terjadi itu diluar tanggung
+   jawab pembuat file ini serta tidak ada kaitannya dengan
+   pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
+   update secara daring melalui updater resmi." 11 63
 
 ## Checking ADB programs
 echo "Checking ADB program..."
@@ -170,7 +176,10 @@ echo "ADB program was availabled on the computer or this folder." || {
     mv "/var/tmp/platform-tools/adb" "$basedir/"  >/dev/null 2>&1
     rm -rf "/var/tmp/platform-tools"  >/dev/null 2>&1
     rm "/var/tmp/platform-tools.zip"  >/dev/null 2>&1
-    echo "ADB program was successfully placed."
+    [ ! -e "$basedir/adb" ] && {
+        echo "Failed getting ADB program. Please try again, make sure your network connected."
+        exit 1
+    } || echo "ADB program was successfully placed."
 }
 
 ## Starting ADB service
@@ -223,28 +232,6 @@ echo "Manipulating FOTA updates..."
 ./adb shell "input keyevent 22"
 ./adb shell "input keyevent 23"
 
-for d in dialog whiptail
-do [ "$DIALOG" == "$d" ] && YESNO_LABEL="--yes-button Lanjutkan --no-button Batal"
-done
-
-[ "$DIALOG" == "kdialog" ] && YESNO_LABEL="--yes-label Lanjutkan --no-label Batal"
-
-## Confirmation
-( $DIALOG                                                    \
-  --title "Persetujuan pengguna"                             \
-  --yesno                                                    \
-"Segala kerusakan/apapun yang terjadi itu diluar tanggung
-jawab pembuat file ini serta tidak ada kaitannya dengan
-pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
-update secara daring melalui updater resmi." 10 63           \
-  $YESNO_LABEL                                               \
-  3>&1 1>&2 2>&3
-) || {
-    ./adb shell "rm /sdcard/adupsfota/update.zip" 2>&1
-    kill-adb
-    exit 1
-}
-
 ## Start updating
 echo "Updating..."
 ./adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
@@ -252,7 +239,8 @@ for (( i=1; i<=20; i++ ))
 do ./adb shell "input keyevent 20"
 done
 ./adb shell "input keyevent 23"
-sleep 1
+sleep 10
+./adb wait-for-device  > /dev/null 2>&1
 
 ## Complete
 [[ "$DIALOG" == "kdialog" ]] && \
