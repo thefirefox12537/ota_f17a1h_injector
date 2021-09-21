@@ -16,7 +16,7 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
   <ol>
   <li> Versi:  <dt>Android 5.0.0 Lollipop <b>(Minimal)</b>, Android 9 keatas <b>(Rekomendasi)</b></dt></li>
   <li> Minimal Kernel:  <dt>Linux Versi 3.0</dt></li>
-  <li> Terpasang Magisk:  <dt>Versi 19.00 keatas</dt></li>
+  <li> Terpasang Magisk:  <dt><a href=https://github.com/topjohnwu/magisk/releases>Versi 19.00 keatas</a></dt></li>
   <li> Terpasang module Magisk ADB and Fastboot NDK</li>
   </ol><br/>
 <li><b>Linux</b></li>
@@ -28,8 +28,8 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 <li><b>Windows</b></li>
   <ol>
   <li> Versi:  <dt>Windows 7 Service Pack 1 <b>(Minimal)</b>, Windows 10 <b>(Rekomendasi)</b></dt></li>
-  <li> Terupdate PowerShell:  <dt>Windows Module Framework 4.0</dt></li>
-  <li> Terpasang Microsoft .NET Framework:  <dt>Versi 4.5 keatas</dt></li>
+  <li> Terupdate PowerShell:  <dt><a href=http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855>Windows Module Framework 4.0</a></dt></li>
+  <li> Terpasang Microsoft .NET Framework:  <dt><a href=https://www.microsoft.com/en-us/download/details.aspx?id=30653>Versi 4.5 keatas</a></dt></li>
   </ol>
 </ol>
 
@@ -53,10 +53,10 @@ Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah i
   <pre>bash <(wget -qO- http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh) </pre>
   </li>
   <li><b>Windows (Command Prompt - Wajib menggunakan Windows PowerShell versi 4.0):</b><p>
-  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', '%tmp%\run.bat') && "%tmp%\run.bat" </pre>
+  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', '%tmp%\inject.bat') && "%tmp%\inject.bat" </pre>
   </li>
   <li><b>Windows (PowerShell versi 4.0 keatas):</b><p>
-  <pre>(New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', "$env:tmp\run.bat"); & "$env:tmp\run.bat" </pre>
+  <pre>(New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" </pre>
   </li>
   </ol>
 Setelah salin, tempelkan (Paste) ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject.<p>
@@ -75,6 +75,14 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
 
 <h2>Changelog:</h2>
+<h3>v1.3.0</h3>
+<ol>
+<li>Perbaikan pengunduhan program ADB (Windows)</li>
+<li>Perbaikan pengunduhan dan pemasangan driver ADB (Windows)</li>
+<li>Perubahan pesan dialog</li>
+<li>Setelah proses inject, penambahan skrip tunggu perangkat hidup</li>
+<li>Mendukung menjalankan skrip secara online <b>(Lihat README.md bagian atas, perintah wget. Sedang dikerjakan untuk update selanjutnya, untuk update saat ini masih dalam pengembangan jadi sedikit bug berjalannya perintah tersebut.)</b></li>
+</ol>
 <h3>v1.2.3</h3>
 <ol>
 <li>Pembaharuan minor ketiga</li>
