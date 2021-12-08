@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         09/22/2021  2:48am
+@ :: Date/Time Modified:         12/07/2021  3:44am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,3,0
-@ ::    Product Version:   1,3,0
+@ ::    File version:      1,4,0
+@ ::    Product Version:   1,4,0
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.3.0
+@ ::    FileVersion:       1.4.0
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.3.0
+@ ::    ProductVersion:    1.4.0
 @ ::
 
 
@@ -68,9 +68,12 @@ if %1!==!  goto USAGE
 
 for %%p in (-h  --help) do if %1!==%%p!  goto USAGE
 if %1!==--readme!  goto README
+if %1!==-Q!  set "basedir=%temp%"
+if %1!==--run-temporary!  set "basedir=%temp%"
 
 if exist %1  set "FILE=%1" & set "FULLPATH=%~dpnx1"
 if exist %2  set "FILE=%2" & set "FULLPATH=%~dpnx2"
+if exist %3  set "FILE=%3" & set "FULLPATH=%~dpnx3"
 if not defined FILE  (
     echo File not found.
     goto end_of_exit
@@ -213,20 +216,20 @@ if %ERRORLEVEL% NEQ 0  (
 :: Starting ADB service
 :start_adb
 echo Starting ADB services...
-.\adb start-server
+"%basedir%\adb" start-server
 
 :: Checking devices
 :checkdevice
 echo Connecting to device...
 timeout /NOBREAK /T 1  > nul 2>&1
 echo Please plug USB to your devices.
-.\adb wait-for-device
+"%basedir%\adb" wait-for-device
 echo Connected.
 
 :: Checking if your devices is F17A1H
 :checkif_F17A1H
 echo Checking if your devices is F17A1H...
-for /f "tokens=*" %%d in ('.\adb shell "getprop ro.fota.device"  2^> nul ^| findstr /r /c:"F17A1H"') do ^
+for /f "tokens=*" %%d in ('"%basedir%\adb" shell "getprop ro.fota.device"  2^> nul ^| findstr /r /c:"F17A1H"') do ^
 set "FOTA_DEVICE=%%d"
 if not "%FOTA_DEVICE%" == "Andromax F17A1H"  (
     set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
@@ -236,13 +239,13 @@ if not "%FOTA_DEVICE%" == "Andromax F17A1H"  (
 :: Activating airplane mode
 :airplanemode
 echo Activating airplane mode...
-.\adb shell "settings put global airplane_mode_on 1"
-.\adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
+"%basedir%\adb" shell "settings put global airplane_mode_on 1"
+"%basedir%\adb" shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 :: Injecting file
 :injecting
 echo Preparing version file %FILE% to injecting device...
-.\adb push "%FILE%" /sdcard/adupsfota/update.zip
+"%basedir%\adb" push "%FILE%" /sdcard/adupsfota/update.zip
 echo Checking file...
 echo Verifying file...
 timeout /NOBREAK /T 12  > nul 2>&1
@@ -251,29 +254,30 @@ timeout /NOBREAK /T 12  > nul 2>&1
 echo Checking updates...
 if %1!==--non-market!  set "NON_MARKET=1"
 if %2!==--non-market!  set "NON_MARKET=1"
+if %3!==--non-market!  set "NON_MARKET=1"
 if defined NON_MARKET  (
-    .\adb shell "settings put global install_non_market_apps 1"
-    .\adb shell "settings put secure install_non_market_apps 1"
+    "%basedir%\adb" shell "settings put global install_non_market_apps 1"
+    "%basedir%\adb" shell "settings put secure install_non_market_apps 1"
 )
 
 echo Cleaning FOTA update...
-.\adb shell "pm clear com.smartfren.fota"
+"%basedir%\adb" shell "pm clear com.smartfren.fota"
 
 echo Manipulating FOTA update...
-.\adb shell "monkey -p com.smartfren.fota 1"
-.\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-.\adb shell "input keyevent 20"
-.\adb shell "input keyevent 22"
-.\adb shell "input keyevent 23"
+"%basedir%\adb" shell "monkey -p com.smartfren.fota 1"
+"%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
+"%basedir%\adb" shell "input keyevent 20"
+"%basedir%\adb" shell "input keyevent 22"
+"%basedir%\adb" shell "input keyevent 23"
 
 :: Start updating
 :updating
 echo Updating...
-.\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (0, 1, 20) do .\adb shell "input keyevent 20"
-.\adb shell "input keyevent 23"
+"%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
+for /l %%a in (0, 1, 20) do "%basedir%\adb" shell "input keyevent 20"
+"%basedir%\adb" shell "input keyevent 23"
 timeout /nobreak /t 10  > nul 2>&1
-.\adb wait-for-device  > nul 2>&1
+"%basedir%\adb" wait-for-device  > nul 2>&1
 
 :: Complete
 > "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^) )
@@ -282,7 +286,15 @@ del /q "%temp%\dialog.vbs"  > nul 2>&1
 
 :kill_adb
 echo Killing ADB services...
-.\adb kill-server
+"%basedir%\adb" kill-server
+
+if %1!==-Q!  set do_deltemp=1
+if %1!==--run-temporary!  set do_deltemp=1
+if defined do_deltemp (
+    echo Removing temporary program files...
+    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do del /q "%basedir%\%%i  > nul 2>&1"
+)
+
 call :end_of_exit
 @ goto :eof
 

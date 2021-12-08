@@ -5,8 +5,7 @@
 # File update.zip dan batch script inject root dari Adi Subagja
 # File bash script inject dari Faizal Hamzah
 
-basedir="$(dirname "$(readlink -f "$0")")"
-for file in "$1" "$2"
+for file in "$1" "$2" "$3"
 do [ -f "$file" ] && {
     FILE="$file"
     FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
@@ -18,6 +17,7 @@ ID="${ID#*=}"; ID="${ID%%\(*}"; ID="${ID%% *}"
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
+ADBDIR="$MAGISK_MODULE/adb-ndk"
 
 USAGE()
 {
@@ -70,12 +70,12 @@ Special thanks to:
 
 start-adb() {
     echo "Starting ADB services..."
-    adb start-server
+    $ADBDIR/adb start-server
 }
 
 kill-adb() {
     echo "Killing ADB services..."
-    adb kill-server
+    $ADBDIR/adb kill-server
 }
 
 pause() {
@@ -85,9 +85,10 @@ pause() {
 
 
 case $1 in
-    "--help" | "-h" )  USAGE ;;
-    "--readme" )       README ;;
-    * )                ;;
+    "--help" | "-h" )            USAGE ;;
+    "--readme" )                 README ;;
+	"--run-temporary" | "-Q" )   ADBDIR="/data/local/tmp" ;;
+    * )                          ;;
 esac
 
 [[ $ID -ne 0 ]] && {
@@ -104,7 +105,7 @@ esac
     exit 1
 }
 [ ! -e "$MAGISK" ] && {
-    echo "This script requires Magisk."
+    echo "This script requires Magisk to be installed."
     exit 1
 }
 
@@ -148,11 +149,37 @@ pause
 
 ## Checking ADB programs
 echo "Checking ADB program..."
-[ -d "$MAGISK_MODULE/adb-ndk" ] && \
-echo "ADB program was availabled on this device." || {
-    echo -e "ADB program cannot be found on this device. \nMake sure ADB and Fastboot module already installed."
+case $1 in
+    "--run-temporary" | "-Q" )
+        [ ! -d /data/data/com.termux ] && {
+            echo "This script requires Termux shell to be installed."
+            exit 1
+        }
+        PATH=$PATH:/data/data/com.termux/files/usr/bin
+        for $i in adb adb.bin adb.bin-armeabi
+        do [ -x $ADBDIR/$i ] && \
+        ADB_EXIST=1 || {
+            echo "Downloading $i from ADB and Fastboot Magisk Modules repository..."
+            wget -qO $ADBDIR/$i https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i
+            chmod 755 $ADBDIR/$i  > /dev/null 2>&1
+    	    ADB_SUCCESS=1
+        }
+        done
+        ;;
+	* )
+        [ -d "$ADBDIR" ] && \
+        ADB_EXIST=1 || {
+            echo -e "ADB program cannot be found on this device. \nMake sure ADB and Fastboot Magisk Modules already installed."
+            exit 1
+        }
+	    ;;
+esac
+
+[ ! -z $ADB_EXIST ] && echo "ADB program was availabled on this device."
+[ ! -z $ADB_SUCCESS ] && [ ! -e $ADBDIR/adb ] && {
+    echo "Failed getting ADB program. Please try again, make sure your network connected."
     exit 1
-}
+} || echo "ADB program was successfully placed."
 
 ## Starting ADB service
 start-adb
@@ -160,12 +187,12 @@ start-adb
 ## Checking devices
 echo "Connecting to device..."
 sleep 1; echo "Please plug USB to your devices."
-adb wait-for-device
+$ADBDIR/adb wait-for-device
 echo "Connected."
 
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
-FOTA_DEVICE="$(adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
+FOTA_DEVICE="$($ADBDIR/adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
 [ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     exit 1
@@ -173,51 +200,59 @@ FOTA_DEVICE="$(adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
 
 ## Activating airplane mode
 echo "Activating airplane mode..."
-adb shell "settings put global airplane_mode_on 1"
-adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
+$ADBDIR/adb shell "settings put global airplane_mode_on 1"
+$ADBDIR/adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 ## Injecting file
 echo "Preparing version file $FILE to injecting device..."
-adb push "$FILE" /sdcard/adupsfota/update.zip
+$ADBDIR/adb push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
 echo "Verifying file..."
 sleep 12
 
 ## Calling FOTA update
 echo "Checking updates..."
-for args in "$1" "$2"
+for args in "$1" "$2" "$3"
 do [ "$args" == "--non-market" ] && NON_MARKET=1
 done
 [[ "$NON_MARKET" ]] && {
-    adb shell "settings put global install_non_market_apps 1"
-    adb shell "settings put secure install_non_market_apps 1"
+    $ADBDIR/adb shell "settings put global install_non_market_apps 1"
+    $ADBDIR/adb shell "settings put secure install_non_market_apps 1"
 }
 
 echo "Cleaning FOTA updates..."
-adb shell "pm clear com.smartfren.fota"
+$ADBDIR/adb shell "pm clear com.smartfren.fota"
 
 echo "Manipulating FOTA updates..."
-adb shell "monkey -p com.smartfren.fota 1"
-adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-adb shell "input keyevent 20"
-adb shell "input keyevent 22"
-adb shell "input keyevent 23"
+$ADBDIR/adb shell "monkey -p com.smartfren.fota 1"
+$ADBDIR/adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
+$ADBDIR/adb shell "input keyevent 20"
+$ADBDIR/adb shell "input keyevent 22"
+$ADBDIR/adb shell "input keyevent 23"
 
 ## Start updating
 echo "Updating..."
-adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
+$ADBDIR/adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
 COUNTER=1
 while :
-do adb shell "input keyevent 20"; (( COUNTER+=1 )); [[ $COUNTER -gt 20 ]] && break
+do $ADBDIR/adb shell "input keyevent 20"; (( COUNTER+=1 )); [[ $COUNTER -gt 20 ]] && break
 done
-adb shell "input keyevent 23"
+$ADBDIR/adb shell "input keyevent 23"
 sleep 10
-./adb wait-for-device  > /dev/null 2>&1
+$ADBDIR/adb wait-for-device  > /dev/null 2>&1
 
 ## Complete
 echo "Proses telah selesai"
 pause
 kill-adb
+
+[[ "$1" == "--run-temporary" || "$1" == "-Q" ]] && {
+    echo "Removing temporary program files..."
+    for $i in adb adb.bin adb.bin-armeabi
+    do rm $ADBDIR/$i  > /dev/null 2>&1
+    done
+}
+
 exit 0
 
 # begin of dummy code
