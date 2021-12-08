@@ -46,26 +46,33 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
   
 Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini:
   <ol>
-  <li><b>Android (Termux):</b><p>
-  <pre>su -c "bash <(wget -qO- http://raw.githubusercontent.com/thefirefox12537/ota_f17a1h_injector/main/inject-android/system/bin/inject.sh)" </pre>
+  <li><b>Android (Termux. Sebelum jalankan, masuk su dulu):</b><p>
+  <pre>bash <(wget -qO- https://bit.ly/injectshell_android) -Q </pre>
   </li>
   <li><b>Linux:</b><p>
-  <pre>bash <(wget -qO- http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh) </pre>
+  <pre>bash <(wget -qO- https://bit.ly/injectshell_linux) -Q </pre>
   </li>
-  <li><b>Windows (Command Prompt - Wajib menggunakan Windows PowerShell versi 4.0):</b><p>
-  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', '%tmp%\inject.bat') && "%tmp%\inject.bat" </pre>
+  <li><b>Windows (Command Prompt - Wajib menggunakan Windows PowerShell versi 4.0 keatas):</b><p>
+  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', '%tmp%\inject.bat') && "%tmp%\inject.bat" -Q </pre>
   </li>
   <li><b>Windows (PowerShell versi 4.0 keatas):</b><p>
-  <pre>(New-Object System.Net.WebClient).DownloadFile('http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" </pre>
+  <pre>(New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" -Q </pre>
   </li>
   </ol>
 Setelah salin, tempelkan (Paste) ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject.<p>
 
 Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Andromax Prime), bisa ketik sebagai berikut:
 <ol>
-<li><b>Android:</b><pre>inject.sh --readme</li>
-<li><b>Linux:</b><pre>./inject-linux.sh --readme</li>
-<li><b>Windows:</b><pre>inject-win.bat --readme</li>
+<li><b>Android:</b><p>
+<pre>inject.sh --readme</pre>
+<pre>bash <(wget -qO- https://bit.ly/injectshell_android) --readme</pre></li>
+<li><b>Linux:</b><p>
+<pre>./inject-linux.sh --readme</pre>
+<pre>bash <(wget -qO- https://bit.ly/injectshell_linux) --readme</pre></li>
+<li><b>Windows:</b><p>
+<pre>inject-win.bat --readme</pre>
+<pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', '%tmp%\inject.bat') && "%tmp%\inject.bat" --readme</pre>
+<pre>(New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" --readme</pre></li>
 </ol>
 
 <h2>Kontak:</h2>
@@ -75,6 +82,12 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
 
 <h2>Changelog:</h2>
+<h3>v1.4.0</h3>
+<ol>
+<li>Perubahan menjalankan skrip secara online <b>(Lihat README.md bagian atas, perintah wget. Sedang dikerjakan untuk update selanjutnya, untuk update saat ini masih dalam pengembangan jadi sedikit bug berjalannya perintah tersebut.)</b></li>
+<li>Kini di platform Android sudah dapat menjalankan secara online tanpa membutuhkan syarat memasang module ADB terlebih dahulu</li>
+<li>Pesan dialog mengaktifkan mode pesawat dan resiko sudah disatukan pada bagian awal</li>
+</ol>
 <h3>v1.3.0</h3>
 <ol>
 <li>Perbaikan pengunduhan program ADB (Windows)</li>
