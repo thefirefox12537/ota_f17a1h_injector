@@ -17,7 +17,7 @@ $ErrorActionPreference = 'Stop'
 $RunScript = (Split-Path -Leaf $MyInvocation.MyCommand.Definition).Replace('.ps1','.bat')
 $Repository = 'thefirefox12537/ota_f17a1h_injector'
 (New-Object Net.WebClient).DownloadFile(
-"http://github.com/$Repository/raw/main/$RunScript",
+"http://github.com/$Repository/raw/main/inject-win.bat",
 "$env:tmp\$RunScript"
 )
 
