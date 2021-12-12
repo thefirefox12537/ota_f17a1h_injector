@@ -1,5 +1,5 @@
 <h1>OTA Haier F17A1H / Andromax Prime Injector Tool</h1>
-Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update secara offline atau ingin di root.
+Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update offline atau ingin di root.
 
 <h2>Download:</h2>
 <ol>
@@ -7,7 +7,8 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 <li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh>Linux Platform</a></li>
 <li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat>Windows Platform</a></li><br/>
   Bila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan file update_injectroot.zip dan support di segala versi firmware Haier Andromax Prime.<p>
-  Klik <a href=https://mega.nz/file/ZNMEERzA#Wz7Km4PcSx0v1fG6Knuw0S2SF8oQlN4pr02NswiIMy0>disini</a> untuk mengunduh update_inject.root.zip
+  Klik <a href=https://mega.nz/file/ZNMEERzA#Wz7Km4PcSx0v1fG6Knuw0S2SF8oQlN4pr02NswiIMy0>disini</a> untuk mengunduh update_inject.root.zip.<p>
+  Saya berterimakasih buat Adi Subagja atas file AdiRoot nya sehingga saya termotivasi dalam memperbaiki skripnya, penambahan skrip untuk platform Android, dan mengambil update_injectroot.zip nya.
 </ol>
 
 <h2>Yang dibutuhkan:</h2>
@@ -18,6 +19,7 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
   <li> Minimal Kernel:  <dt>Linux Versi 3.0</dt></li>
   <li> Terpasang Magisk:  <dt><a href=https://github.com/topjohnwu/magisk/releases>Versi 19.00 keatas</a></dt></li>
   <li> Terpasang module Magisk ADB and Fastboot NDK</li>
+  <li> Mendukung USB OTG pada smartphone</li>
   </ol><br/>
 <li><b>Linux</b></li>
   <ol>
@@ -47,16 +49,16 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini:
   <ol>
   <li><b>Android (Termux. Sebelum jalankan, masuk su dulu):</b><p>
-  <pre>bash <(wget -qO- https://bit.ly/injectshell_android) -Q </pre>
+  <pre>bash <(wget -qO- https://bit.ly/injectscript_android) -Q </pre>
   </li>
   <li><b>Linux:</b><p>
-  <pre>bash <(wget -qO- https://bit.ly/injectshell_linux) -Q </pre>
+  <pre>bash <(wget -qO- https://bit.ly/injectscript_linux) -Q </pre>
   </li>
   <li><b>Windows (Command Prompt - Wajib menggunakan Windows PowerShell versi 4.0 keatas):</b><p>
-  <pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', '%tmp%\inject.bat') && "%tmp%\inject.bat" -Q </pre>
+  <pre>powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q </pre>
   </li>
   <li><b>Windows (PowerShell versi 4.0 keatas):</b><p>
-  <pre>(New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" -Q </pre>
+  <pre>& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q </pre>
   </li>
   </ol>
 Setelah salin, tempelkan (Paste) ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject.<p>
@@ -65,14 +67,14 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <ol>
 <li><b>Android:</b><p>
 <pre>inject.sh --readme</pre>
-<pre>bash <(wget -qO- https://bit.ly/injectshell_android) --readme</pre></li>
+<pre>bash <(wget -qO- https://bit.ly/injectscript_android) --readme</pre></li>
 <li><b>Linux:</b><p>
 <pre>./inject-linux.sh --readme</pre>
-<pre>bash <(wget -qO- https://bit.ly/injectshell_linux) --readme</pre></li>
+<pre>bash <(wget -qO- https://bit.ly/injectscript_linux) --readme</pre></li>
 <li><b>Windows:</b><p>
 <pre>inject-win.bat --readme</pre>
-<pre>powershell -command (New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', '%tmp%\inject.bat') && "%tmp%\inject.bat" --readme</pre>
-<pre>(New-Object System.Net.WebClient).DownloadFile('https://bit.ly/injectshell_windows', "$env:tmp\inject.bat"); & "$env:tmp\inject.bat" --readme</pre></li>
+<pre>powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme</pre>
+<pre>& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme</pre></li>
 </ol>
 
 <h2>Kontak:</h2>
@@ -82,6 +84,10 @@ Bila butuh panduan mengenai mengaktifkan USB debugging pada Haier F17A1H (Androm
 <li><a href=mailto:reinmclaren33@gmail.com>E-Mail</a></li>
 
 <h2>Changelog:</h2>
+<h3>v1.4.0: Revision #1 (Tidak ada sertaan ke paket releases)</h3>
+<ol>
+<li>Penambahan skrip baru di platform Windows PowerShell (Berjalan secara online, lihat di README.md.)</li>
+</ol>
 <h3>v1.4.0</h3>
 <ol>
 <li>Perubahan menjalankan skrip secara online <b>(Lihat README.md bagian atas, perintah wget. Sedang dikerjakan untuk update selanjutnya, untuk update saat ini masih dalam pengembangan jadi sedikit bug berjalannya perintah tersebut.)</b></li>
