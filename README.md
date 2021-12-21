@@ -4,10 +4,10 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 
 ## Download:
   <ol>
-  <li>[Android Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-android.zip)</li>
-  <li>[Linux Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh)</li>
-  <li>[Windows Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat)</li>
-  <ol>
+  <li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-android.zip>Android Platform</a></li>
+  <li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh>Linux Platform</a></li>
+  <li><a href=https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat>Windows Platform</a></li>
+  </ol>
 
 Bila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan file update_injectroot.zip dan support di segala versi firmware Haier Andromax Prime. Klik [disini](https://mega.nz/file/ZNMEERzA#Wz7Km4PcSx0v1fG6Knuw0S2SF8oQlN4pr02NswiIMy0).
 
