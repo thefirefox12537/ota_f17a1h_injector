@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         12/07/2021  3:44am
+@ :: Date/Time Modified:         12/22/2021  5:40am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,4,0
-@ ::    Product Version:   1,4,0
+@ ::    File version:      1,4,1
+@ ::    Product Version:   1,4,1
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.4.0
+@ ::    FileVersion:       1.4.1
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.4.0
+@ ::    ProductVersion:    1.4.1
 @ ::
 
 
@@ -62,14 +62,12 @@ if "%LOWERNT%" == "1" goto winnt
 
 if not defined LOWERNT  setlocal EnableExtensions EnableDelayedExpansion
 
-set "basedir=%~dp0"
-set "basedir=%basedir:~0,-1%"
+set basedir=.
 if %1!==!  goto USAGE
 
 for %%p in (-h  --help) do if %1!==%%p!  goto USAGE
+for %%p in (-Q  --run-temporary) do if %1!==%%p!  for %%A in ("%temp%") do set "basedir=%%~sA"
 if %1!==--readme!  goto README
-if %1!==-Q!  set "basedir=%temp%"
-if %1!==--run-temporary!  set "basedir=%temp%"
 
 if exist %1  set "FILE=%1" & set "FULLPATH=%~dpnx1"
 if exist %2  set "FILE=%2" & set "FULLPATH=%~dpnx2"
@@ -127,20 +125,20 @@ if %ret% EQU 7  goto end_of_exit
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
     echo Wsh.Echo MsgBox^( _
-    echo   " *  Harap aktifkan USB Debugging terlebih dahulu sebelum mengeksekusi" + vbCrLf + _
-    echo   "     inject update.zip [Untuk membaca cara mengaktifkan USB debugging," + vbCrLf + _
-    echo   "     dengan mengetik]:" + vbCrLf + _
+    echo   " *  Harap aktifkan USB Debugging terlebih dahulu sebelum" + vbCrLf + _
+    echo   "     mengeksekusi inject update.zip [Untuk membaca cara" + vbCrLf + _
+    echo   "     mengaktifkan USB debugging, dengan mengetik]:" + vbCrLf + _
     echo   vbCrLf + _
     echo   "           %~nx0 --readme" + vbCrLf + _
     echo   vbCrLf + _
-    echo   " *  Apabila HP terpasang kartu SIM, skrip akan terotomatis mengaktifkan" + vbCrLf + _
-    echo   "     Mode Pesawat." + vbCrLf + _
+    echo   " *  Apabila HP terpasang kartu SIM, skrip akan terotomatis" + vbCrLf + _
+    echo   "     mengaktifkan Mode Pesawat." + vbCrLf + _
     echo   vbCrLf + _
     echo   "NOTE:" + vbTab + "Harap baca dahulu sebelum eksekusi. Segala kerusakan/" + vbCrLf + _
-    echo   vbTab + "apapun yang terjadi itu diluar tanggung jawab pembuat file ini" + vbCrLf + _
-    echo   vbTab + "serta tidak ada kaitannya dengan pihak manapun. Untuk lebih" + vbCrLf + _
-    echo   vbTab + "aman tanpa resiko, dianjurkan update secara daring melalui" + vbCrLf + _
-    echo   vbTab + "updater resmi.", _
+    echo   vbTab + "apapun yang terjadi itu diluar tanggung jawab pembuat file" + vbCrLf + _
+    echo   vbTab + "ini serta tidak ada kaitannya dengan pihak manapun. Untuk" + vbCrLf + _
+    echo   vbTab + "lebih aman tanpa resiko, dianjurkan update secara" + vbCrLf + _
+    echo   vbTab + "daring melalui updater resmi.", _
     echo   vbOKOnly _
     echo ^)
 )
@@ -153,25 +151,26 @@ echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
 :adbnotexist
-if not exist "%basedir%\adb.exe"  (
+if not exist %basedir%\adb.exe  (
     del /q "%temp%\platform-tools.zip"  > nul 2>&1
     echo Downloading Android SDK Platform Tools...
-    powershell -NoProfile -Command ^
-    $ProgressPreference = 'SilentlyContinue'; ^
-    Invoke-WebRequest ^
-      -uri https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip ^
-      -OutFile '%temp%\platform-tools.zip'
+    powershell -NoProfile -Command ^(New-Object System.Net.WebClient^).DownloadFile^( ^
+      'https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip', ^
+      '%temp%\platform-tools.zip' ^
+    ^)
 
     echo Extracting Android SDK Platform Tools...
-    powershell -NoProfile -Command ^
-    Add-Type -Assembly System.IO.Compression.FileSystem; ^
-    [void][System.IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\platform-tools.zip', '%temp%\'^)
+    powershell -NoProfile -Command Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
+      '%temp%\platform-tools.zip', ^
+      '%temp%\' ^
+    ^)
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d"  (
     for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\"  > nul 2>&1
     rd /s /q "%temp%\%%d"  > nul 2>&1
     )
     del /q "%temp%\platform-tools.zip"  > nul 2>&1
-    if not exist "%basedir%\adb.exe"  (
+    if not exist %basedir%\adb.exe  (
         echo Failed getting ADB program. Please try again, make sure your network connected.
         @ goto :eof
     ) else  (
@@ -187,18 +186,20 @@ where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  
 if %ERRORLEVEL% NEQ 0  (
     del /q "%temp%\usb_driver.zip"  > nul 2>&1
     echo Downloading ADB Interface driver...
-    powershell -NoProfile -Command ^
-    $ProgressPreference = 'SilentlyContinue'; ^
-    Invoke-WebRequest ^
-      -uri https://dl.google.com/android/repository/latest_usb_driver_windows.zip ^
-      -OutFile '%temp%\usb_driver.zip'
+    powershell -NoProfile -Command ^(New-Object System.Net.WebClient^).DownloadFile^( ^
+      'https://dl.google.com/android/repository/latest_usb_driver_windows.zip', ^
+      '%temp%\usb_driver.zip' ^
+    ^)
 
     echo Extracting ADB Interface driver...
-    powershell -NoProfile -Command ^
-    Add-Type -Assembly System.IO.Compression.FileSystem; ^
-    [void][System.IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\usb_driver.zip', '%temp%\'^)
-    powershell -NoProfile -Command ^
-    Start-Process PnPUtil.exe ^
+    powershell -NoProfile -Command Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
+      '%temp%\usb_driver.zip', ^
+      '%temp%\' ^
+    ^)
+
+    echo Installing driver...
+    powershell -NoProfile -Command Start-Process PnPUtil.exe ^
       -Wait -WindowStyle hidden -Verb runas ^
       -ArgumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
 
@@ -216,68 +217,71 @@ if %ERRORLEVEL% NEQ 0  (
 :: Starting ADB service
 :start_adb
 echo Starting ADB services...
-"%basedir%\adb" start-server
+%basedir%\adb start-server
 
 :: Checking devices
 :checkdevice
 echo Connecting to device...
 timeout /NOBREAK /T 1  > nul 2>&1
 echo Please plug USB to your devices.
-"%basedir%\adb" wait-for-device
+%basedir%\adb wait-for-device
 echo Connected.
 
 :: Checking if your devices is F17A1H
 :checkif_F17A1H
 echo Checking if your devices is F17A1H...
-for /f "tokens=*" %%d in ('"%basedir%\adb" shell "getprop ro.fota.device"  2^> nul ^| findstr /r /c:"F17A1H"') do ^
+for /f "usebackq tokens=*" %%d in (`%basedir%\adb shell "getprop ro.fota.device"  2^> nul ^| findstr /r /c:"F17A1H"`) do ^
 set "FOTA_DEVICE=%%d"
 if not "%FOTA_DEVICE%" == "Andromax F17A1H"  (
     set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    call :remove_temporary
     goto :error
 )
 
 :: Activating airplane mode
 :airplanemode
 echo Activating airplane mode...
-"%basedir%\adb" shell "settings put global airplane_mode_on 1"
-"%basedir%\adb" shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
+%basedir%\adb shell "settings put global airplane_mode_on 1"
+%basedir%\adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 :: Injecting file
 :injecting
 echo Preparing version file %FILE% to injecting device...
-"%basedir%\adb" push "%FILE%" /sdcard/adupsfota/update.zip
+%basedir%\adb push "%FILE%" /sdcard/adupsfota/update.zip
 echo Checking file...
 echo Verifying file...
 timeout /NOBREAK /T 12  > nul 2>&1
 
 :: Calling FOTA update
 echo Checking updates...
-if %1!==--non-market!  set "NON_MARKET=1"
-if %2!==--non-market!  set "NON_MARKET=1"
-if %3!==--non-market!  set "NON_MARKET=1"
+for %%p in (-n  --non-market) do (
+    if %1!==%%p!  set "NON_MARKET=1"
+    if %2!==%%p!  set "NON_MARKET=1"
+    if %3!==%%p!  set "NON_MARKET=1"
+)
 if defined NON_MARKET  (
-    "%basedir%\adb" shell "settings put global install_non_market_apps 1"
-    "%basedir%\adb" shell "settings put secure install_non_market_apps 1"
+    %basedir%\adb shell "settings put global install_non_market_apps 1"
+    %basedir%\adb shell "settings put secure install_non_market_apps 1"
 )
 
 echo Cleaning FOTA update...
-"%basedir%\adb" shell "pm clear com.smartfren.fota"
+%basedir%\adb shell "pm clear com.smartfren.fota"
 
 echo Manipulating FOTA update...
-"%basedir%\adb" shell "monkey -p com.smartfren.fota 1"
-"%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-"%basedir%\adb" shell "input keyevent 20"
-"%basedir%\adb" shell "input keyevent 22"
-"%basedir%\adb" shell "input keyevent 23"
+%basedir%\adb shell "monkey -p com.smartfren.fota 1"
+%basedir%\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
+%basedir%\adb shell "input keyevent 20"
+%basedir%\adb shell "input keyevent 22"
+%basedir%\adb shell "input keyevent 23"
 
 :: Start updating
 :updating
 echo Updating...
-"%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (0, 1, 20) do "%basedir%\adb" shell "input keyevent 20"
-"%basedir%\adb" shell "input keyevent 23"
+%basedir%\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
+for /l %%a in (0, 1, 20) do %basedir%\adb shell "input keyevent 20"
+%basedir%\adb shell "input keyevent 23"
 timeout /nobreak /t 10  > nul 2>&1
-"%basedir%\adb" wait-for-device  > nul 2>&1
+%basedir%\adb wait-for-device  > nul 2>&1
 
 :: Complete
 > "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^) )
@@ -286,16 +290,19 @@ del /q "%temp%\dialog.vbs"  > nul 2>&1
 
 :kill_adb
 echo Killing ADB services...
-"%basedir%\adb" kill-server
-
-if %1!==-Q!  set do_deltemp=1
-if %1!==--run-temporary!  set do_deltemp=1
-if defined do_deltemp (
-    echo Removing temporary program files...
-    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do del /q "%basedir%\%%i  > nul 2>&1"
-)
+%basedir%\adb kill-server
+call :remove_temporary
 
 call :end_of_exit
+@ goto :eof
+
+:remove_temporary
+for %%p in (-Q  --run-temporary) do if %1!==%%p!  set do_deltemp=1
+if defined do_deltemp (
+    echo Removing temporary program files...
+    %basedir%\adb kill-server
+    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do del /q "%basedir%\%%i"  > nul 2>&1
+)
 @ goto :eof
 
 :wscript

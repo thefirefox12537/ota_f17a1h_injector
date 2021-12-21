@@ -17,7 +17,7 @@ ID="${ID#*=}"; ID="${ID%%\(*}"; ID="${ID%% *}"
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
-ADBDIR="$MAGISK_MODULE/adb-ndk"
+ADBDIR="$MAGISK_MODULE/adb-ndk/bin"
 
 USAGE()
 {
@@ -76,6 +76,17 @@ start-adb() {
 kill-adb() {
     echo "Killing ADB services..."
     $ADBDIR/adb kill-server
+}
+
+remove-temporary() {
+    case $1 in
+        "--run-temporary" | "-Q" )
+            echo "Removing temporary program files..."
+            "$ADBDIR/adb" kill-server
+            rm "$ADBDIR/adb"  > /dev/null 2>&1
+            ;;
+        * ) ;;
+    esac
 }
 
 pause() {
@@ -195,6 +206,7 @@ echo "Checking if your devices is F17A1H..."
 FOTA_DEVICE="$($ADBDIR/adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
 [ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    remove-temporary
     exit 1
 }
 
@@ -245,13 +257,7 @@ $ADBDIR/adb wait-for-device  > /dev/null 2>&1
 echo "Proses telah selesai"
 pause
 kill-adb
-
-[[ "$1" == "--run-temporary" || "$1" == "-Q" ]] && {
-    echo "Removing temporary program files..."
-    for $i in adb adb.bin adb.bin-armeabi
-    do rm $ADBDIR/$i  > /dev/null 2>&1
-    done
-}
+remove-temporary
 
 exit 0
 

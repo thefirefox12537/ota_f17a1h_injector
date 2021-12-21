@@ -80,6 +80,17 @@ kill-adb() {
     "$ADBDIR/adb" kill-server
 }
 
+remove-temporary() {
+    case $1 in
+        "--run-temporary" | "-Q" )
+            echo "Removing temporary program files..."
+            "$ADBDIR/adb" kill-server
+            rm "$ADBDIR/adb"  > /dev/null 2>&1
+            ;;
+        * ) ;;
+    esac
+}
+
 
 ## Set dialog screen program
 for d in dialog whiptail kdialog
@@ -119,7 +130,7 @@ done
 case $1 in
     "--help" | "-h" )            USAGE;;
     "--readme" )                 README;;
-	"--run-temporary" | "-Q" )   ADBDIR="/var/tmp" ;;
+    "--run-temporary" | "-Q" )   ADBDIR="/var/tmp" ;;
     * )                          ;;
 esac
 
@@ -199,6 +210,7 @@ FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep 
     [[ "$DIALOG" == "kdialog" ]] && \
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
     $DIALOG -msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
+    remove-temporary
     exit 1
 }
 
@@ -217,7 +229,11 @@ sleep 12
 ## Calling FOTA update
 echo "Checking updates..."
 for args in "$1" "$2" "$3"
-do [ "$args" == "--non-market" ] && NON_MARKET=1
+do
+    case $args in
+        "--non-market" | "-n" )  NON_MARKET=1 ;;
+        * )  ;;
+    esac
 done
 [[ "$NON_MARKET" ]] && {
     "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
@@ -249,11 +265,7 @@ sleep 10
 $DIALOG --msgbox "Proses telah selesai" || \
 $DIALOG --msgbox "\n           Proses telah selesai" 8 48
 kill-adb
-
-[[ "$1" == "--run-temporary" || "$1" == "-Q" ]] && {
-    echo "Removing temporary program files..."
-    rm "$ADBDIR/adb"  > /dev/null 2>&1
-}
+remove-temporary
 
 exit 0
 
