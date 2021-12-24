@@ -229,11 +229,10 @@ sleep 12
 ## Calling FOTA update
 echo "Checking updates..."
 for args in "$1" "$2" "$3"
-do
-    case $args in
-        "--non-market" | "-n" )  NON_MARKET=1 ;;
-        * )  ;;
-    esac
+do case $args in
+    "--non-market" | "-n" )  NON_MARKET=1 ;;
+    * )  ;;
+esac
 done
 [[ "$NON_MARKET" ]] && {
     "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"

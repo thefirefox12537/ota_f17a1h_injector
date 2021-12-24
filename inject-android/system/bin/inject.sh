@@ -98,7 +98,7 @@ pause() {
 case $1 in
     "--help" | "-h" )            USAGE ;;
     "--readme" )                 README ;;
-	"--run-temporary" | "-Q" )   ADBDIR="/data/local/tmp" ;;
+    "--run-temporary" | "-Q" )   ADBDIR="/data/local/tmp" ;;
     * )                          ;;
 esac
 
@@ -173,17 +173,17 @@ case $1 in
             echo "Downloading $i from ADB and Fastboot Magisk Modules repository..."
             wget -qO $ADBDIR/$i https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i
             chmod 755 $ADBDIR/$i  > /dev/null 2>&1
-    	    ADB_SUCCESS=1
+            ADB_SUCCESS=1
         }
         done
         ;;
-	* )
+    * )
         [ -d "$ADBDIR" ] && \
         ADB_EXIST=1 || {
             echo -e "ADB program cannot be found on this device. \nMake sure ADB and Fastboot Magisk Modules already installed."
             exit 1
         }
-	    ;;
+        ;;
 esac
 
 [ ! -z $ADB_EXIST ] && echo "ADB program was availabled on this device."
@@ -225,7 +225,10 @@ sleep 12
 ## Calling FOTA update
 echo "Checking updates..."
 for args in "$1" "$2" "$3"
-do [ "$args" == "--non-market" ] && NON_MARKET=1
+do case $args in
+    "--non-market" | "-n" )  NON_MARKET=1 ;;
+    * )  ;;
+esac
 done
 [[ "$NON_MARKET" ]] && {
     $ADBDIR/adb shell "settings put global install_non_market_apps 1"

@@ -16,21 +16,27 @@ Bila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan file u
 
 ## Yang dibutuhkan:
 ### Android
-  *  Versi:  <dt>Android 5.0.0 Lollipop <b>(Minimal)</b>, Android 9 keatas <b>(Rekomendasi)</b></dt>
-  *  Minimal Kernel:  <dt>Linux Versi 3.0</dt>
-  *  Terpasang Magisk:  <dt>[Versi 19.00 keatas](https://github.com/topjohnwu/magisk/releases)<dt>
-  *  Terpasang module Magisk ADB and Fastboot NDK
-  *  Mendukung USB OTG pada smartphone
+| Dibutuhkan     | Keterangan                                                              |
+| -------------- | ----------------------------------------------------------------------- |
+| Versi          | Minimal: 5.0.0 Lollipop<br/>Rekomendasi: 9.0 Pie                        |
+| Kernel         | Linux versi 3.0                                                         |
+| Magisk         | [Versi 19.00 keatas](https://github.com/topjohnwu/magisk/releases)      |
+| Modules        | [ADB and Fastboot NDK](https://github.com/Magisk-Modules-Repo/adb-ndk)  |
+| Misc.          | Mendukung USB OTG pada smartphone                                       |
 
 ### Linux
-  *  Distribusi yang didukung:  <dt>Debian/Ubuntu, RedHat Enterprise Linux, Fedora, Arch Linux, OpenSUSE/SLES</dt>
-  *  Minimal Kernel:  <dt>Versi 4.4</dt>
-  *  Arsitektur Prosesor:  <dt>64-bit (x86_64/amd64)</dt>
+| Dibutuhkan     | Keterangan                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| Distribusi     | *  Debian/Ubuntu<br/>*  RedHat Enterprise Linux/CentOS<br/>*  Fedora<br/>*  Arch Linux<br/>*  OpenSUSE/SLES  |
+| Kernel         | Linux versi 4.4                                                                                              |
+| Prosesor       | 64-bit (x86_64/amd64)                                                                                        |
 
 ### Windows
-  *  Versi:  <dt>Windows 7 Service Pack 1 <b>(Minimal)</b>, Windows 10 <b>(Rekomendasi)</b></dt>
-  *  Terupdate PowerShell:  <dt>[Windows Module Framework 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)</dt>
-  *  Terpasang .NET Framework:  <dt>[Versi 4.5 keatas](https://www.microsoft.com/en-us/download/details.aspx?id=30653)</dt>
+| Dibutuhkan     | Keterangan                                                                                                                                      |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Versi          | Minimal: Windows 7 Service Pack 1<br/>Rekomendasi: Windows 10                                                                                   |
+| PowerShell     | Minimal: [Windows Module Framework versi 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)<br/>Rekomendasi: [Windows Module Framework versi 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)                               |
+| .NET Framework | [Versi 4.5 keatas](https://www.microsoft.com/en-us/download/details.aspx?id=30653)                                                              |
 
 
 ## Cara menggunakan?
@@ -38,7 +44,7 @@ Bila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan file u
 
 **Android**
 
-Pastikan kalian memiliki aplikasi Terminal Emulator atau Termux pada perangkat ini. Jika sudah, buka Terminal Emulator lalu ketik:
+Pastikan kalian sudah terpasang Magisk, module ini dan memiliki aplikasi Terminal Emulator atau Termux pada perangkat ini. Jika sudah, buka Terminal Emulator lalu ketik:
 ```sh
 su
 ```
@@ -61,10 +67,11 @@ lalu jalankan perintahnya beserta file update.zip nya.
 
 **Windows**
 
-Buka Command Prompt atau Powershell di menu Start. lalu masuk ke direktori tempat skrip **inject-win.bat** berada, jalankan dengan ketik:
+Buka Command Prompt atau PowerShell di menu Start. lalu masuk ke direktori tempat skrip **inject-win.bat** berada, jalankan dengan ketik:
 ```
-inject-win.bat < path file update.zip >
+.\inject-win.bat < path file update.zip >
 ```
+
 
 
 ### Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini dan tempelkan ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject:
@@ -80,13 +87,27 @@ bash <(wget -qO- https://bit.ly/injectscript_linux) -Q
 ```
 
 **Windows (Command Prompt - Wajib terupdate Windows PowerShell versi 4.0 keatas)**
+
+Bila komputer anda berada di versi Windows 7 SP1
 ```
-powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q 
+powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
+& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+```
+Sedangkan di Windows 8 keatas (Windows 10)
+```
+powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
 
 **Windows (PowerShell versi 4.0 keatas)**
+
+Bila komputer anda berada di versi Windows 7 SP1
 ```
-& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+```
+Sedangkan di Windows 8 keatas (Windows 10)
+```
+& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
 
 
@@ -110,13 +131,15 @@ bash <(wget -qO- https://bit.ly/injectscript_linux) --readme
 
 **Windows**
 ```
-inject-win.bat --readme
+.\inject-win.bat --readme
 ```
 ```
-powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
+powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
+& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
 ```
 ```
-& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
 ```
 
 
@@ -128,6 +151,11 @@ powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).Downloa
 
 
 ## Changelog:
+### v1.4.2
+  *  Pembaharuan minor ketiga
+  *  Perbaikan baris skrip
+  *  Penambahan protokol keamanan jaringan (Windows)
+  *  Perubahan menjalankan skrip secara online **(Lihat di [README.md](https://github.com/thefirefox12537/ota_f17a1h_injector#jika-kalian-tidak-sempat-mendownload-skrip-kalian-bisa-salin-perintah-dibawah-ini-dan-tempelkan-ke-command-promptterminal-dan-tambahkanketik-nama-file-updatezip-yang-akan-di-inject).)**
 ### v1.4.1
 Pembaharuan minor
 ### v1.4.0: Revision #1 (Tidak ada sertaan ke paket releases)

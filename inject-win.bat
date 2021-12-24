@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         12/22/2021  5:40am
+@ :: Date/Time Modified:         12/25/2021  5:40am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,4,1
-@ ::    Product Version:   1,4,1
+@ ::    File version:      1,4,2
+@ ::    Product Version:   1,4,2
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.4.1
+@ ::    FileVersion:       1.4.2
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.4.1
+@ ::    ProductVersion:    1.4.2
 @ ::
 
 
@@ -44,11 +44,11 @@
 if "%OS%" == "Windows_NT"  goto runwinnt
 
 :runos2
-ver | find "Operating System/2"  > nul
+ver | find "Operating System/2" > nul
 if not errorlevel 1  goto win9xos2
 
 :rundoswin
-if exist %windir%\..\msdos.sys  find "WinVer" %windir%\..\msdos.sys | find "WinVer=4"  > nul
+if exist %windir%\..\msdos.sys  find "WinVer" %windir%\..\msdos.sys | find "WinVer=4" > nul
 if not errorlevel 1  goto win9xos2
 goto dos
 
@@ -56,22 +56,24 @@ goto dos
 @ SETLOCAL
 @ BREAK OFF
 
-for %%v in (Daytona  Cairo  Hydra  Neptune  NT) do ver | findstr /r /c:"%%v"  > nul  && ^
-if not errorlevel 1  set LOWERNT=1
+for %%v in (Daytona  Cairo  Hydra  Neptune  NT) do ver | findstr /r /c:"%%v" > nul && ^
+if not errorlevel 1 set LOWERNT=1
 if "%LOWERNT%" == "1" goto winnt
 
-if not defined LOWERNT  setlocal EnableExtensions EnableDelayedExpansion
+if not defined LOWERNT setlocal EnableExtensions EnableDelayedExpansion
 
-set basedir=.
+set "basedir=%~dp0"
+set "basedir=%basedir:~0,-1%"
 if %1!==!  goto USAGE
 
-for %%p in (-h  --help) do if %1!==%%p!  goto USAGE
-for %%p in (-Q  --run-temporary) do if %1!==%%p!  for %%A in ("%temp%") do set "basedir=%%~sA"
+for %%p in (-h --help) do ^
+if %1!==%%p!  goto USAGE
+for %%p in (-Q --run-temporary) do ^
+if %1!==%%p!  set "basedir=%temp%"
 if %1!==--readme!  goto README
 
-if exist %1  set "FILE=%1" & set "FULLPATH=%~dpnx1"
-if exist %2  set "FILE=%2" & set "FULLPATH=%~dpnx2"
-if exist %3  set "FILE=%3" & set "FULLPATH=%~dpnx3"
+for %%x in (%1 %2 %3) do ^
+if exist %%x (set "FILE=%%x" && set "FULLPATH=%%~dpfx")
 if not defined FILE  (
     echo File not found.
     goto end_of_exit
@@ -83,25 +85,27 @@ set "FULLPATH=%FULLPATH:"=""%"
 :: Checking your system if approriate with requirements
 :: Please wait at the moments.
 :gettingrequire
-for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') ^
-do if "%%w" == "5"  ( set "WINVER=%%w.%%x.%%y" ) ^
-else  ( set "WINVER=%%v.%%w.%%x" )
-for %%v in (6.1.7600  6.0  5.2  5.1  5.00) ^
-do if "%WINVER%" == "%%v"  (
+for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') do ^
+if %%w EQU 5 ( set "WINVER=%%w.%%x.%%y" ) ^
+else ( set "WINVER=%%v.%%w.%%x" )
+for %%v in (6.1.7600  6.0  5.2  5.1  5.00) do ^
+if "%WINVER%" == "%%v" (
     set "MESSAGE_ERROR=This script requirements Windows 7 Service Pack 1 or later"
     goto :error
 )
 
-for /f %%v in ('powershell -NoProfile -Command "(Get-Host).Version.Major"  2^> nul') ^
-do set "PSVER_MAJOR=%%v"
-if %PSVER_MAJOR% LSS 4  (
+for /f usebackq %%v in (`call powershell -noprofile -command ^
+Write-Host ^(Get-Host^).Version.Major 2^> nul`) do ^
+set "PSVER_MAJOR=%%v"
+if %PSVER_MAJOR% LSS 4 (
     set "MESSAGE_ERROR=This script requirements Windows Module Framework (PowerShell) version 4.0"
     goto :error
 )
 
-for /f "skip=2 tokens=3" %%v in ('reg query "HKLM\SOFTWARE\Microsoft\Net Framework Setup\NDP\v4\Full" /v Version  2^> nul') ^
-do set "DOTNETFX_VER=%%v"
-if "%DOTNETFX_VER%" LSS "4.5"  (
+for /f usebackq %%a in (`call powershell -noprofile -command ^
+[System.Enum]::GetNames^([System.Net.SecurityProtocolType]^) -notcontains 'Tls12' 2^> nul`) do ^
+set "Result=%%a"
+if "%Result%" == "True" (
     set "MESSAGE_ERROR=This script requirements Microsoft .NET Framework version 4.5 or later"
     goto :error
 )
@@ -117,9 +121,9 @@ call :wscript dialog.vbs
     echo   "Inject Andromax Prime" _
     echo ^)
 )
-for /f %%i in ('cscript "%temp%\dialog.vbs" //nologo //e:vbscript') do set ret=%%i
-del /q "%temp%\dialog.vbs"  > nul 2>&1
-if %ret% EQU 7  goto end_of_exit
+for /f %%i in ('call cscript "%temp%\dialog.vbs" //nologo //e:vbscript') do set ret=%%i
+del /q "%temp%\dialog.vbs" > nul 2>&1
+if %ret% EQU 7 goto end_of_exit
 
 :: NOTE
 call :wscript dialog.vbs
@@ -142,8 +146,8 @@ call :wscript dialog.vbs
     echo   vbOKOnly _
     echo ^)
 )
-cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\dialog.vbs"  > nul 2>&1
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :: Checking ADB programs
 :checkadb
@@ -151,86 +155,96 @@ echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
 :adbnotexist
-if not exist %basedir%\adb.exe  (
-    del /q "%temp%\platform-tools.zip"  > nul 2>&1
+if not exist "%basedir%\adb.exe" (
+    del /q "%temp%\platform-tools.zip" > nul 2>&1
     echo Downloading Android SDK Platform Tools...
-    powershell -NoProfile -Command ^(New-Object System.Net.WebClient^).DownloadFile^( ^
+    call powershell -noprofile -command ^
+    if ^([System.Environment]::OSVersion.Version -lt ^(New-Object Version 6,2^)^) ^
+    {[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12}; ^
+    ^(New-Object System.Net.WebClient^).DownloadFile^( ^
       'https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip', ^
       '%temp%\platform-tools.zip' ^
     ^)
 
     echo Extracting Android SDK Platform Tools...
-    powershell -NoProfile -Command Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    call powershell -noprofile -command ^
+    Add-Type -Assembly System.IO.Compression.FileSystem; ^
     [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
       '%temp%\platform-tools.zip', ^
       '%temp%\' ^
     ^)
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d"  (
-    for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\"  > nul 2>&1
+    for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do ^
+    move "%temp%\%%d\%%f" "%basedir%\" > nul 2>&1
     rd /s /q "%temp%\%%d"  > nul 2>&1
     )
-    del /q "%temp%\platform-tools.zip"  > nul 2>&1
-    if not exist %basedir%\adb.exe  (
+    del /q "%temp%\platform-tools.zip" > nul 2>&1
+    if not exist "%basedir%\adb.exe" (
         echo Failed getting ADB program. Please try again, make sure your network connected.
         @ goto :eof
-    ) else  (
+    ) else (
         echo ADB program was successfully placed.
     )
-) else  ( echo ADB program was availabled on the computer or this folder. )
+) else ( echo ADB program was availabled on the computer or this folder. )
 
 echo Checking ADB Interface driver installed...
 
 :: Downloading ADB Interface driver
 :drivernotinstalled
-where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
-if %ERRORLEVEL% NEQ 0  (
-    del /q "%temp%\usb_driver.zip"  > nul 2>&1
+where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf > nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    del /q "%temp%\usb_driver.zip" > nul 2>&1
     echo Downloading ADB Interface driver...
-    powershell -NoProfile -Command ^(New-Object System.Net.WebClient^).DownloadFile^( ^
+    call powershell -noprofile -command ^
+    if ^([System.Environment]::OSVersion.Version -lt ^(New-Object Version 6,2^)^) ^
+    {[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12}; ^
+    ^(New-Object System.Net.WebClient^).DownloadFile^( ^
       'https://dl.google.com/android/repository/latest_usb_driver_windows.zip', ^
       '%temp%\usb_driver.zip' ^
     ^)
 
     echo Extracting ADB Interface driver...
-    powershell -NoProfile -Command Add-Type -Assembly System.IO.Compression.FileSystem; ^
+    call powershell -noprofile -command ^
+    Add-Type -Assembly System.IO.Compression.FileSystem; ^
     [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
       '%temp%\usb_driver.zip', ^
       '%temp%\' ^
     ^)
 
     echo Installing driver...
-    powershell -NoProfile -Command Start-Process PnPUtil.exe ^
+    call powershell -noprofile -command ^
+    Start-Process pnputil.exe ^
       -Wait -WindowStyle hidden -Verb runas ^
       -ArgumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
 
-    rd /s /q "%temp%\usb_driver"  > nul 2>&1
-    del /q "%temp%\usb_driver.zip"  > nul 2>&1
-    where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf  > nul 2>&1
-    if %ERRORLEVEL% NEQ 0  (
+    rd /s /q "%temp%\usb_driver" > nul 2>&1
+    del /q "%temp%\usb_driver.zip" > nul 2>&1
+    where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf > nul 2>&1
+    if %ERRORLEVEL% NEQ 0 (
         echo Failed installing driver. Please try again.
         @ goto :eof
-    ) else  (
+    ) else (
         echo Driver successfully installed.
     )
-) else  ( echo Driver already installed. )
+) else ( echo Driver already installed. )
 
 :: Starting ADB service
 :start_adb
 echo Starting ADB services...
-%basedir%\adb start-server
+call "%basedir%\adb" start-server
 
 :: Checking devices
 :checkdevice
 echo Connecting to device...
-timeout /NOBREAK /T 1  > nul 2>&1
+call timeout /nobreak /t 1 > nul 2>&1
 echo Please plug USB to your devices.
-%basedir%\adb wait-for-device
+call "%basedir%\adb" wait-for-device
 echo Connected.
 
 :: Checking if your devices is F17A1H
 :checkif_F17A1H
 echo Checking if your devices is F17A1H...
-for /f "usebackq tokens=*" %%d in (`%basedir%\adb shell "getprop ro.fota.device"  2^> nul ^| findstr /r /c:"F17A1H"`) do ^
+for /f "tokens=*" %%d in ('call "%basedir%\adb" shell "getprop ro.fota.device" 2^> nul ^| findstr /r /c:"F17A1H"') do ^
 set "FOTA_DEVICE=%%d"
 if not "%FOTA_DEVICE%" == "Andromax F17A1H"  (
     set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
@@ -241,67 +255,68 @@ if not "%FOTA_DEVICE%" == "Andromax F17A1H"  (
 :: Activating airplane mode
 :airplanemode
 echo Activating airplane mode...
-%basedir%\adb shell "settings put global airplane_mode_on 1"
-%basedir%\adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
+call "%basedir%\adb" shell "settings put global airplane_mode_on 1"
+call "%basedir%\adb" shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 :: Injecting file
 :injecting
 echo Preparing version file %FILE% to injecting device...
-%basedir%\adb push "%FILE%" /sdcard/adupsfota/update.zip
+call "%basedir%\adb" push "%FILE%" /sdcard/adupsfota/update.zip
 echo Checking file...
 echo Verifying file...
-timeout /NOBREAK /T 12  > nul 2>&1
+call timeout /nobreak /t 12 > nul 2>&1
 
 :: Calling FOTA update
 echo Checking updates...
-for %%p in (-n  --non-market) do (
-    if %1!==%%p!  set "NON_MARKET=1"
-    if %2!==%%p!  set "NON_MARKET=1"
-    if %3!==%%p!  set "NON_MARKET=1"
-)
+for %%x in (%1 %2 %3) do ^
+for %%p in (-n --non-market) do ^
+if %%x!==%%p! set "NON_MARKET=1"
 if defined NON_MARKET  (
-    %basedir%\adb shell "settings put global install_non_market_apps 1"
-    %basedir%\adb shell "settings put secure install_non_market_apps 1"
+    call "%basedir%\adb" shell "settings put global install_non_market_apps 1"
+    call "%basedir%\adb" shell "settings put secure install_non_market_apps 1"
 )
 
 echo Cleaning FOTA update...
-%basedir%\adb shell "pm clear com.smartfren.fota"
+call "%basedir%\adb" shell "pm clear com.smartfren.fota"
 
 echo Manipulating FOTA update...
-%basedir%\adb shell "monkey -p com.smartfren.fota 1"
-%basedir%\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-%basedir%\adb shell "input keyevent 20"
-%basedir%\adb shell "input keyevent 22"
-%basedir%\adb shell "input keyevent 23"
+call "%basedir%\adb" shell "monkey -p com.smartfren.fota 1"
+call "%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
+call "%basedir%\adb" shell "input keyevent 20"
+call "%basedir%\adb" shell "input keyevent 22"
+call "%basedir%\adb" shell "input keyevent 23"
 
 :: Start updating
 :updating
 echo Updating...
-%basedir%\adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (0, 1, 20) do %basedir%\adb shell "input keyevent 20"
-%basedir%\adb shell "input keyevent 23"
-timeout /nobreak /t 10  > nul 2>&1
-%basedir%\adb wait-for-device  > nul 2>&1
+call "%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
+for /l %%a in (0, 1, 20) do ^
+call "%basedir%\adb" shell "input keyevent 20"
+call "%basedir%\adb" shell "input keyevent 23"
+call timeout /nobreak /t 10 > nul 2>&1
+call "%basedir%\adb" wait-for-device > nul 2>&1
 
 :: Complete
 > "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^) )
-cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\dialog.vbs"  > nul 2>&1
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :kill_adb
 echo Killing ADB services...
-%basedir%\adb kill-server
+call "%basedir%\adb" kill-server
 call :remove_temporary
 
 call :end_of_exit
 @ goto :eof
 
 :remove_temporary
-for %%p in (-Q  --run-temporary) do if %1!==%%p!  set do_deltemp=1
+for %%p in (-Q --run-temporary) do ^
+if %1!==%%p! set do_deltemp=1
 if defined do_deltemp (
     echo Removing temporary program files...
-    %basedir%\adb kill-server
-    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do del /q "%basedir%\%%i"  > nul 2>&1
+    call "%basedir%\adb" kill-server
+    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do ^
+    del /q "%basedir%\%%i" > nul 2>&1
 )
 @ goto :eof
 
@@ -361,8 +376,8 @@ call :wscript dialog.vbs
     echo   "Read-Me" _
     echo ^)
 )
-cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\dialog.vbs"  > nul 2>&1
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
@@ -383,15 +398,15 @@ call :wscript dialog.vbs
     echo   "Usage" _
     echo ^)
 )
-cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\dialog.vbs"  > nul 2>&1
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
 :error
 > "%temp%\dialog.vbs" ( echo Wsh.Echo MsgBox^("%MESSAGE_ERROR%", vbCritical^) )
-cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
-del /q "%temp%\dialog.vbs"  > nul 2>&1
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
