@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 #requires -version 4
 <#PSScriptInfo
-.VERSION 1.4.2
+.VERSION 1.4.3
 .GUID 702d7de5-2805-4d25-92fa-4aa08148b894
 .AUTHOR Faizal Hamzah
 .PROJECTURI http://github.com/thefirefox12537/ota_f17a1h_injector.git
@@ -25,7 +25,7 @@ Run inject-win.ps1 without arguments to view help usage.
 #>
 <#
 Date created:   12/08/2021  4:11pm
-Date modified:  12/25/2021  5:40am
+Date modified:  12/25/2021  8:00am
 #>
 
 if ($IsLinux -or $IsmacOS)

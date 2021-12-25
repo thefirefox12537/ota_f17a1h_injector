@@ -151,8 +151,10 @@ powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityP
 
 
 ## Changelog:
+### v1.4.3
+Pembaharuan minor ketiga
 ### v1.4.2
-  *  Pembaharuan minor ketiga
+  *  Pembaharuan minor kedua
   *  Perbaikan baris skrip
   *  Penambahan protokol keamanan jaringan (Windows)
   *  Perubahan menjalankan skrip secara online **(Lihat di [README.md](https://github.com/thefirefox12537/ota_f17a1h_injector#jika-kalian-tidak-sempat-mendownload-skrip-kalian-bisa-salin-perintah-dibawah-ini-dan-tempelkan-ke-command-promptterminal-dan-tambahkanketik-nama-file-updatezip-yang-akan-di-inject).)**

@@ -20,7 +20,7 @@ inject.sh --readme
 
 
 ## Contact ##
-[Facebook](https://fb.me/thefirefoxflasher)
-[Instagram](https://www.instagram.com/thefirefoxflasher_)
-[WhatsApp](https://bit.ly/wa_thefirefoxflasher)
-[E-Mail](mailto:reinmclaren33@gmail.com)
+  *  [Facebook](https://fb.me/thefirefoxflasher)
+  *  [Instagram](https://www.instagram.com/thefirefoxflasher_)
+  *  [WhatsApp](https://bit.ly/wa_thefirefoxflasher)
+  *  [E-Mail](mailto:reinmclaren33@gmail.com)

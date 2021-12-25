@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         12/25/2021  5:40am
+@ :: Date/Time Modified:         12/25/2021  8:00am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,4,2
-@ ::    Product Version:   1,4,2
+@ ::    File version:      1,4,3
+@ ::    Product Version:   1,4,3
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.4.2
+@ ::    FileVersion:       1.4.3
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.4.2
+@ ::    ProductVersion:    1.4.3
 @ ::
 
 
@@ -174,19 +174,22 @@ if not exist "%basedir%\adb.exe" (
       '%temp%\' ^
     ^)
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d"  (
-    for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do ^
-    move "%temp%\%%d\%%f" "%basedir%\" > nul 2>&1
+    for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\" > nul 2>&1
     rd /s /q "%temp%\%%d"  > nul 2>&1
     )
     del /q "%temp%\platform-tools.zip" > nul 2>&1
-    if not exist "%basedir%\adb.exe" (
-        echo Failed getting ADB program. Please try again, make sure your network connected.
-        @ goto :eof
-    ) else (
-        echo ADB program was successfully placed.
-    )
+    set ADB_SUCCESS=1
 ) else ( echo ADB program was availabled on the computer or this folder. )
 
+if defined ADB_SUCCESS ^
+if not exist "%basedir%\adb.exe" (
+    echo Failed getting ADB program. Please try again, make sure your network connected.
+    @ goto :eof
+) else (
+    echo ADB program was successfully placed.
+)
+
+:checkadbdriver
 echo Checking ADB Interface driver installed...
 
 :: Downloading ADB Interface driver
@@ -219,14 +222,19 @@ if %ERRORLEVEL% NEQ 0 (
 
     rd /s /q "%temp%\usb_driver" > nul 2>&1
     del /q "%temp%\usb_driver.zip" > nul 2>&1
-    where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf > nul 2>&1
-    if %ERRORLEVEL% NEQ 0 (
-        echo Failed installing driver. Please try again.
-        @ goto :eof
-    ) else (
-        echo Driver successfully installed.
-    )
+    set DRIVER_SUCCESS=1
 ) else ( echo Driver already installed. )
+
+set "commands=call powershell -noprofile -command "pnputil.exe -e ^| ^
+Select-String -Context 1 'Driver package provider :\s+ Google, Inc.' ^| ^
+foreach{^($_.Context.PreContext[0] -split ' : +'^)[1]}""
+if defined DRIVER_SUCCESS for /f usebackq %%a in (`%commands%`) do ^
+if not exist %SystemRoot%\inf\%%a (
+    echo Failed installing driver. Please try again.
+    @ goto :eof
+) else (
+    echo Driver successfully installed.
+)
 
 :: Starting ADB service
 :start_adb
