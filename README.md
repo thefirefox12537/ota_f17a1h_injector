@@ -93,7 +93,7 @@ Bila komputer anda berada di versi Windows 7 SP1
 powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
 & ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
-Sedangkan di Windows 8 keatas (Windows 10)
+Sedangkan di Windows 8 keatas
 ```
 powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
@@ -105,7 +105,7 @@ Bila komputer anda berada di versi Windows 7 SP1
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 & ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
-Sedangkan di Windows 8 keatas (Windows 10)
+Sedangkan di Windows 8 keatas
 ```
 & ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
@@ -151,6 +151,12 @@ powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityP
 
 
 ## Changelog:
+### v1.4.4
+  *  Pembaharuan minor keempat
+  *  Perbaikan baris skrip
+  *  Perbaikan baris skrip di perintah online
+  *  Penambahan cek file sasaran (skrip akan bekerja kalau file ekstensinya zip atau flashable recovery/TWRP/OTA pada umumnya dalam dunia pengoprekan HP Android.)
+  *  Penambahan perintah install wget (apt) bila Termux shell belum terpasang
 ### v1.4.3
 Pembaharuan minor ketiga
 ### v1.4.2

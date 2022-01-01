@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
-#requires -version 4
+#requires -version 3
 <#PSScriptInfo
-.VERSION 1.4.3
+.VERSION 1.4.4
 .GUID 702d7de5-2805-4d25-92fa-4aa08148b894
 .AUTHOR Faizal Hamzah
 .PROJECTURI http://github.com/thefirefox12537/ota_f17a1h_injector.git
@@ -25,19 +25,21 @@ Run inject-win.ps1 without arguments to view help usage.
 #>
 <#
 Date created:   12/08/2021  4:11pm
-Date modified:  12/25/2021  8:00am
+Date modified:  01/01/2021 11:52am
 #>
 
 if ($IsLinux -or $IsmacOS)
 {Write-Error "This script requires Microsoft Windows Operating System."; return 1}
 
+if ((Get-Host).Version -lt (New-Object Version 4,0))
+{Write-Error "This script requires Windows Module Framework (PowerShell) version 4.0"; return 1}
 if ([System.Enum]::GetNames([System.Net.SecurityProtocolType]) -notcontains 'Tls12')
 {Write-Error "This script requires .NET Framework version 4.5"; return 1}
 if ([System.Environment]::OSVersion.Version -lt (New-Object Version 6,2))
 {[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12}
 
 $ErrorActionPreference = 'Stop'
-$WebClient = New-Object Net.WebClient
+$WebClient = New-Object System.Net.WebClient
 $GitHub = 'http://github.com'
 $Repository = 'thefirefox12537/ota_f17a1h_injector'
 $Releases = 'releases/latest/download'

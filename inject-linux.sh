@@ -9,6 +9,8 @@ for file in "$1" "$2" "$3"
 do [ -f "$file" ] && {
     FILE="$file"
     FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
+    EXTENSION="$(printf "${file##*.}" | awk '{print tolower($0)}')"
+    break
 }
 done
 
@@ -21,9 +23,13 @@ USAGE()
 USAGE: $0 <update.zip file>
 
 Additional arguments are maybe to know:
-  -h, --help         Show help information for this script.
-  -n, --non-market   Inject with install non market (root.zip).
-  --readme           Show read-me (advanced help)."
+  -a, --download-adb   Run without check ADB and Fastboot module
+                       (ADB program permanently placed. Android only use).
+  -h, --help           Show help information for this script.
+  -n, --non-market     Inject with install non market.
+  -Q, --run-temporary  Run without check ADB and Fastboot module
+                       (ADB program not permanently placed).
+  --readme             Show read-me (advanced help)."
     exit 1
 }
 
@@ -81,20 +87,17 @@ kill-adb() {
 }
 
 remove-temporary() {
-    case $1 in
-        "--run-temporary" | "-Q" )
-            echo "Removing temporary program files..."
-            "$ADBDIR/adb" kill-server
-            rm "$ADBDIR/adb"  > /dev/null 2>&1
-            ;;
-        * ) ;;
-    esac
+    [[ "$run_temporary" ]] && {
+        echo "Removing temporary program files..."
+        "$ADBDIR/adb" kill-server
+        rm "$ADBDIR/adb" > /dev/null 2>&1
+    }
 }
 
 
 ## Set dialog screen program
 for d in dialog whiptail kdialog
-do which $d  > /dev/null 2>&1 && DIALOG="$d"
+do command -v $d > /dev/null 2>&1 && DIALOG="$d"
 done
 
 [ -z "$DIALOG" ] && {
@@ -115,29 +118,44 @@ done
 [[ "$ID" = "arch" || "$ID_LIKE" = "arch" ]] && DIST_CORE="archlinux"
 
 [[ -z "$DIST_CORE" ]] && {
-    echo "This script cannot be run in this Linux distribution"
+    echo "This script cannot be run in this Linux distribution."
     exit 1
 }
 [[ $(uname -sr) < "Linux 4.4"* ]] && {
-    echo "This script requirements Linux Kernel Version 4.4 later"
+    echo "This script requirements at least Linux Kernel version 4.4."
     exit 1
 }
 [[ $(uname -p) != *"64" ]] && {
-    echo "This script requirements a 64-bit Operating System"
+    echo "This script requirements a 64-bit Operating System."
     exit 1
 }
 
 case $1 in
-    "--help" | "-h" )            USAGE;;
-    "--readme" )                 README;;
-    "--run-temporary" | "-Q" )   ADBDIR="/var/tmp" ;;
-    * )                          ;;
+    "--help" | "-h" )
+        USAGE ;;
+    "--readme" )
+        README ;;
+    "--run-temporary" | "-Q" )
+        ADBDIR="/var/tmp"
+        run_temporary=1
+        ;;
+    "--download-adb" | "-a" )
+        echo "You cannot run this argument in Linux."
+        exit 1
+        ;;
+    * )
+        ;;
 esac
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z "$FILE" ] && {
+    [ -z $FILE ] && {
         echo "File not found."
+        exit 1
+    }
+
+    [ "$EXTENSION" != "zip" ] && {
+        echo "File is not ZIP type."
         exit 1
     }
 
@@ -181,14 +199,16 @@ echo "Checking ADB program..."
 [ -e "$ADBDIR/adb" ] && \
 echo "ADB program was availabled on the computer or this folder." || {
     echo "Downloading Android SDK Platform Tools..."
-    wget -qO "/var/tmp/platform-tools.zip" \
-             https://dl.google.com/android/repository/platform-tools-latest-linux.zip
+    wget \
+      -qO "/var/tmp/platform-tools.zip" \
+      https://dl.google.com/android/repository/platform-tools-latest-linux.zip
     echo "Extracting Android SDK Platform Tools..."
-    unzip -qo "/var/tmp/platform-tools.zip" platform-tools/adb \
-          -d "/var/tmp/"
-    mv "/var/tmp/platform-tools/adb" "$ADBDIR/"  >/dev/null 2>&1
-    rm -rf "/var/tmp/platform-tools"  >/dev/null 2>&1
-    rm "/var/tmp/platform-tools.zip"  >/dev/null 2>&1
+    unzip \
+      -qo "/var/tmp/platform-tools.zip" platform-tools/adb \
+      -d "/var/tmp/"
+    mv "/var/tmp/platform-tools/adb" "$ADBDIR/" >/dev/null 2>&1
+    rm -rf "/var/tmp/platform-tools" >/dev/null 2>&1
+    rm "/var/tmp/platform-tools.zip" >/dev/null 2>&1
     [ ! -e "$ADBDIR/adb" ] && {
         echo "Failed getting ADB program. Please try again, make sure your network connected."
         exit 1
@@ -206,7 +226,7 @@ sleep 1; echo "Please plug USB to your devices."
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
 FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
+[ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
     [[ "$DIALOG" == "kdialog" ]] && \
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
     $DIALOG -msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
@@ -230,8 +250,12 @@ sleep 12
 echo "Checking updates..."
 for args in "$1" "$2" "$3"
 do case $args in
-    "--non-market" | "-n" )  NON_MARKET=1 ;;
-    * )  ;;
+    "--non-market" | "-n" )
+        NON_MARKET=1
+        break
+        ;;
+    * )
+        ;;
 esac
 done
 [[ "$NON_MARKET" ]] && {
@@ -245,19 +269,19 @@ echo "Cleaning FOTA updates..."
 echo "Manipulating FOTA updates..."
 "$ADBDIR/adb" shell "monkey -p com.smartfren.fota 1"
 "$ADBDIR/adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-"$ADBDIR/adb" shell "input keyevent 20"
-"$ADBDIR/adb" shell "input keyevent 22"
-"$ADBDIR/adb" shell "input keyevent 23"
+"$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1
+"$ADBDIR/adb" shell "input keyevent 22" > /dev/null 2>&1
+"$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 
 ## Start updating
 echo "Updating..."
 "$ADBDIR/adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
 for (( i=1; i<=20; i++ ))
-do "$ADBDIR/adb" shell "input keyevent 20"
+do "$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1
 done
-"$ADBDIR/adb" shell "input keyevent 23"
+"$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 sleep 10
-"$ADBDIR/adb" wait-for-device  > /dev/null 2>&1
+"$ADBDIR/adb" wait-for-device > /dev/null 2>&1
 
 ## Complete
 [[ "$DIALOG" == "kdialog" ]] && \
@@ -288,4 +312,6 @@ hwjdoAJFIHUFAIRHAJFBhfIDagsiarfUFSJFHiduAIDY78teueiudjADadhBdDffHBhwdwdkjAJDHldA
 XLkHDUayA877a6A5FayaDUA7d8ATD8ada7FA6A7fa6caca8d8AGD9A9d7ASCHA9SHC9AF0hfssfha9s99Dch9HCa9
 xiaXA98sh888H8AHD8adaYDYdDASFASGasadD8yf8YFu99F8f6sRAw5asfD7aged9u9sfu9FY8yf8U9ADU9AUD9uf
 9A9y8g6tf7GbK4J4jkQ42OI4H1Ejndk8DY8fqJ58e3Ys85YfADgaH9dWRKSKD7du8rr3hIA8Dd3rk8Y889Fyd9a8d
+91eu19b2yr39y5rv9235y35w9d2f3Yw59sfY0Y9rYL0sd9Yre2vDed9RY4ny9Y59VLY528wfa5dwegw832v948Y24
+92c82Sdt59s8hrthw875A7596A8rwb6896Dfawg84y34f34ct6F89689b54tFscaAS12rvYFWGdasd3tyTC33tdfe
 # end of dummy code

@@ -9,11 +9,13 @@ for file in "$1" "$2" "$3"
 do [ -f "$file" ] && {
     FILE="$file"
     FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
+    EXTENSION="$(printf "${file##*.}" | awk '{print tolower($0)}')"
+    break
 }
 done
 
-ID="$(id)"
-ID="${ID#*=}"; ID="${ID%%\(*}"; ID="${ID%% *}"
+ID=$(id)
+ID=${ID%%\(*}; ID=${ID#*=}
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
@@ -26,9 +28,13 @@ USAGE()
 USAGE: $0 <update.zip file>
 
 Additional arguments are maybe to know:
-  -h, --help         Show help information for this script.
-  -n, --non-market   Inject with install non market (root.zip).
-  --readme           Show read-me (advanced help)."
+  -a, --download-adb   Run without check ADB and Fastboot module
+                       (ADB program permanently placed. Android only use).
+  -h, --help           Show help information for this script.
+  -n, --non-market     Inject with install non market.
+  -Q, --run-temporary  Run without check ADB and Fastboot module
+                       (ADB program not permanently placed).
+  --readme             Show read-me (advanced help)."
     exit 1
 }
 
@@ -70,23 +76,22 @@ Special thanks to:
 
 start-adb() {
     echo "Starting ADB services..."
-    $ADBDIR/adb start-server
+    "$ADBDIR/adb" start-server
 }
 
 kill-adb() {
     echo "Killing ADB services..."
-    $ADBDIR/adb kill-server
+    "$ADBDIR/adb" kill-server
 }
 
 remove-temporary() {
-    case $1 in
-        "--run-temporary" | "-Q" )
-            echo "Removing temporary program files..."
-            "$ADBDIR/adb" kill-server
-            rm "$ADBDIR/adb"  > /dev/null 2>&1
-            ;;
-        * ) ;;
-    esac
+    [[ "$run_temporary" ]] && {
+        echo "Removing temporary program files..."
+        "$ADBDIR/adb" kill-server
+        for i in adb adb.bin adb.bin-armeabi
+        do rm "$ADBDIR/$i" > /dev/null 2>&1
+        done
+    }
 }
 
 pause() {
@@ -96,10 +101,23 @@ pause() {
 
 
 case $1 in
-    "--help" | "-h" )            USAGE ;;
-    "--readme" )                 README ;;
-    "--run-temporary" | "-Q" )   ADBDIR="/data/local/tmp" ;;
-    * )                          ;;
+    "--help" | "-h" )
+        USAGE ;;
+    "--readme" )
+        README ;;
+    "--run-temporary" | "-Q" )
+        [ ! -d "/data/local/tmp" ] && \
+        mkdir "/data/local/tmp" > /dev/null 2>&1
+        ADBDIR="/data/local/tmp"
+        run_temporary=1
+        ;;
+    "--download-adb" | "-a" )
+        [ ! -d "/data/local/bin" ] && \
+        mkdir "/data/local/bin" > /dev/null 2>&1
+        ADBDIR="/data/local/bin"
+        ;;
+    * )
+        ;;
 esac
 
 [[ $ID -ne 0 ]] && {
@@ -112,18 +130,44 @@ esac
     exit 1
 }
 [[ $(uname -sr) < "Linux 3"* ]] && {
-    echo "This script requirements Linux Kernel Version 3.0 later."
+    echo "This script requirements at least Linux Kernel version 3.0."
     exit 1
 }
 [ ! -e "$MAGISK" ] && {
-    echo "This script requires Magisk to be installed."
+    echo "This script requires Magisk installed."
     exit 1
 }
+case $1 in
+    "--run-temporary" | "-Q" |
+    "--download-adb"  | "-a" )
+        [ ! -d "/data/data/com.termux" ] && {
+            echo "This script requires Termux shell installed."
+            exit 1
+        }
+        for split in $(printf "${PATH//:/$'\n'}")
+        do [ "$split" == "/data/data/com.termux/files/usr/bin" ] && TERMUX_ENV=1
+        done
+        [ -z $TERMUX_ENV ] && \
+        PATH="/data/data/com.termux/files/usr/bin"
+        command -v wget > /dev/null 2>&1 || {
+            apt-get update > /dev/null 2>&1
+            apt-get -y install wget > /dev/null 2>&1
+        }
+        ;;
+    * )
+        ;;
+esac
+
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z "$FILE" ] && {
+    [ -z $FILE ] && {
         echo "File not found."
+        exit 1
+    }
+
+    [ "$EXTENSION" != "zip" ] && {
+        echo "File is not ZIP type."
         exit 1
     }
 
@@ -133,9 +177,12 @@ esac
         read -srn1 YN
         echo
         case $YN in
-            [Yy]* )  break ;;
-            [Nn]* )  exit 1 ;;
-            * )      echo -ne "Anda yakin? " ;;
+            [Yy]* )
+                break ;;
+            [Nn]* )
+                exit 1 ;;
+            * )
+                echo -ne "Anda yakin? " ;;
         esac
     done
 } || USAGE
@@ -161,18 +208,16 @@ pause
 ## Checking ADB programs
 echo "Checking ADB program..."
 case $1 in
-    "--run-temporary" | "-Q" )
-        [ ! -d /data/data/com.termux ] && {
-            echo "This script requires Termux shell to be installed."
-            exit 1
-        }
-        PATH=$PATH:/data/data/com.termux/files/usr/bin
-        for $i in adb adb.bin adb.bin-armeabi
-        do [ -x $ADBDIR/$i ] && \
+    "--run-temporary" | "-Q" | \
+    "--download-adb"  | "-a" )
+        echo "Downloading ADB binary from Magisk Modules repository: ADB and Fastboot NDK..."
+        for i in adb adb.bin adb.bin-armeabi
+        do [ -e "$ADBDIR/$i" ] && \
         ADB_EXIST=1 || {
-            echo "Downloading $i from ADB and Fastboot Magisk Modules repository..."
-            wget -qO $ADBDIR/$i https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i
-            chmod 755 $ADBDIR/$i  > /dev/null 2>&1
+            wget \
+              -qO "$ADBDIR/$i" \
+              https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i
+            chmod 755 "$ADBDIR/$i" > /dev/null 2>&1
             ADB_SUCCESS=1
         }
         done
@@ -187,7 +232,8 @@ case $1 in
 esac
 
 [ ! -z $ADB_EXIST ] && echo "ADB program was availabled on this device."
-[ ! -z $ADB_SUCCESS ] && [ ! -e $ADBDIR/adb ] && {
+[ ! -z $ADB_SUCCESS ] && \
+[ ! -e "$ADBDIR/adb" ] && {
     echo "Failed getting ADB program. Please try again, make sure your network connected."
     exit 1
 } || echo "ADB program was successfully placed."
@@ -198,13 +244,13 @@ start-adb
 ## Checking devices
 echo "Connecting to device..."
 sleep 1; echo "Please plug USB to your devices."
-$ADBDIR/adb wait-for-device
+"$ADBDIR/adb" wait-for-device
 echo "Connected."
 
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
-FOTA_DEVICE="$($ADBDIR/adb shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "$FOTA_DEVICE" != $'Andromax F17A1H\r' ] && {
+FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
+[ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     remove-temporary
     exit 1
@@ -212,12 +258,12 @@ FOTA_DEVICE="$($ADBDIR/adb shell "getprop ro.fota.device" 2> /dev/null | grep "F
 
 ## Activating airplane mode
 echo "Activating airplane mode..."
-$ADBDIR/adb shell "settings put global airplane_mode_on 1"
-$ADBDIR/adb shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
+"$ADBDIR/adb" shell "settings put global airplane_mode_on 1"
+"$ADBDIR/adb" shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 
 ## Injecting file
 echo "Preparing version file $FILE to injecting device..."
-$ADBDIR/adb push "$FILE" /sdcard/adupsfota/update.zip
+"$ADBDIR/adb" push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
 echo "Verifying file..."
 sleep 12
@@ -226,35 +272,39 @@ sleep 12
 echo "Checking updates..."
 for args in "$1" "$2" "$3"
 do case $args in
-    "--non-market" | "-n" )  NON_MARKET=1 ;;
-    * )  ;;
+    "--non-market" | "-n" )
+        NON_MARKET=1
+        break
+        ;;
+    * )
+        ;;
 esac
 done
 [[ "$NON_MARKET" ]] && {
-    $ADBDIR/adb shell "settings put global install_non_market_apps 1"
-    $ADBDIR/adb shell "settings put secure install_non_market_apps 1"
+    "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
+    "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
 }
 
 echo "Cleaning FOTA updates..."
-$ADBDIR/adb shell "pm clear com.smartfren.fota"
+"$ADBDIR/adb" shell "pm clear com.smartfren.fota"
 
 echo "Manipulating FOTA updates..."
-$ADBDIR/adb shell "monkey -p com.smartfren.fota 1"
-$ADBDIR/adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
-$ADBDIR/adb shell "input keyevent 20"
-$ADBDIR/adb shell "input keyevent 22"
-$ADBDIR/adb shell "input keyevent 23"
+"$ADBDIR/adb" shell "monkey -p com.smartfren.fota 1"
+"$ADBDIR/adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaPopupUpateActivity"
+"$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1
+"$ADBDIR/adb" shell "input keyevent 22" > /dev/null 2>&1
+"$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 
 ## Start updating
-echo "Updating..."
-$ADBDIR/adb shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
 COUNTER=1
-while :
-do $ADBDIR/adb shell "input keyevent 20"; (( COUNTER+=1 )); [[ $COUNTER -gt 20 ]] && break
+echo "Updating..."
+"$ADBDIR/adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
+while [ $COUNTER -le 20 ]
+do "$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1 && (( COUNTER+=1 ))
 done
-$ADBDIR/adb shell "input keyevent 23"
+"$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 sleep 10
-$ADBDIR/adb wait-for-device  > /dev/null 2>&1
+"$ADBDIR/adb" wait-for-device > /dev/null 2>&1
 
 ## Complete
 echo "Proses telah selesai"
