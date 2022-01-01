@@ -76,7 +76,7 @@ Buka Command Prompt atau PowerShell di menu Start. lalu masuk ke direktori tempa
 
 ### Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini dan tempelkan ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject:
 
-**Android (Termux. Sebelum jalankan, masuk su dulu)**
+**Android (hanya bisa dijalankan di Termux. Sebelum jalankan perintah ini, pasang wget dulu dan masuk su)**
 ```bash
 bash <(wget -qO- https://bit.ly/injectscript_android) -Q 
 ```
