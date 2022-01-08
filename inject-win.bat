@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         01/01/2021 11:52am
+@ :: Date/Time Modified:         01/04/2021  6:30am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,4,4
-@ ::    Product Version:   1,4,4
+@ ::    File version:      1,5,0
+@ ::    Product Version:   1,5,0
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.4.4
+@ ::    FileVersion:       1.5.0
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.4.4
+@ ::    ProductVersion:    1.5.0
 @ ::
 
 
@@ -56,14 +56,12 @@ goto dos
 @ SETLOCAL
 @ BREAK OFF
 
-for %%v in (Daytona Cairo Hydra Neptune NT) do ver | findstr /r /c:"%%v" > nul && ^
-if not errorlevel 1 set OLD_WINNT=1
+for %%v in (Daytona Cairo Hydra Neptune NT) do ver | findstr /r /c:"%%v" > nul && if not errorlevel 1 set OLD_WINNT=1
 if "%OLD_WINNT%" == "1" goto winnt
-
 if not defined OLD_WINNT (setlocal EnableExtensions EnableDelayedExpansion)
 
-set "_UCASE=ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-set "_LCASE=abcdefghijklmnopqrstuvwxyz"
+set "_UPPERCASE=ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+set "_LOWERCASE=abcdefghijklmnopqrstuvwxyz"
 
 set "basedir=%~dp0"
 set "basedir=%basedir:~0,-1%"
@@ -80,9 +78,9 @@ if %1!==%%p! (set "MESSAGE_ERROR=You cannot run this argument in Windows." && go
 for %%x in (%1 %2 %3) do ^
 if exist %%x (set "FILE=%%x" && set "FULLPATH=%%~dpfx" && set "EXTENSION=%%~xx")
 for /l %%a in (0,1,25) do ^
-call set "_UPCASE=%%_UCASE:~%%a,1%%" && ^
-call set "_LWCASE=%%_LCASE:~%%a,1%%" && ^
-call set "EXTENSION=%%EXTENSION:!_UPCASE!=!_LWCASE!%%"
+call set "_from=%%_UPPERCASE:~%%a,1%%" && ^
+call set "_to=%%_LOWERCASE:~%%a,1%%" && ^
+call set "EXTENSION=%%EXTENSION:!_from!=!_to!%%"
 if not defined FILE (
     echo File not found.
     goto end_of_exit
@@ -100,20 +98,23 @@ set "FULLPATH=%FULLPATH:"=""%"
 :: Please wait at the moments.
 :gettingrequire
 for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') do ^
-if %%w EQU 5 (set "WINVER=%%w.%%x.%%y") else (set "WINVER=%%v.%%w.%%x")
-for %%s in (6.1.7600 6.0 5.2 5.1 5.00) do ^
-if "%WINVER%" == "%%s" (
+if "%%v.%%w" == "6.1" if %%x LEQ 7600 (set "OLDWIN=1") && ^
+if "%%v.%%w" == "6.0"  (set "OLDWIN=1") && ^
+if "%%v.%%w" == "5.3"  (set "OLDWIN=1") && ^
+if "%%v.%%w" == "5.2"  (set "OLDWIN=1") && ^
+if "%%w.%%x" == "5.1"  (set "OLDWIN=1") && ^
+if "%%w.%%x" == "5.00" (set "OLDWIN=1")
+if "%OLDWIN%" == "1" (
     set "MESSAGE_ERROR=This script requires Windows 7 Service Pack 1 or latest"
     goto :error
 )
 
 for /f usebackq %%a in (`call powershell -noprofile -command ^
-(Get-Host^).Version -lt ^(New-Object Version 4,0^) 2^> nul`) do ^
+$PSVersionTable.PSVersion -lt ^(New-Object Version 4,0^) 2^> nul`) do ^
 if "%%a" == "True" (set "errorcapt=Windows Module Framework (PowerShell) version 4.0")
 for /f usebackq %%a in (`call powershell -noprofile -command ^
 [System.Enum]::GetNames^([System.Net.SecurityProtocolType]^) -notcontains 'Tls12' 2^> nul`) do ^
-if "%%a" == "True" (set "errorcapt=.NET Framework version 4.5 and Windows Module Framework (PowerShell) version 4.0")
-
+if "%%a" == "True" (set "errorcapt=at least .NET Framework version 4.5 and Windows Module Framework version 4.0")
 if defined errorcapt (
     set "MESSAGE_ERROR=This script requires %errorcapt%"
     goto :error
@@ -138,14 +139,14 @@ if %ret% EQU 7 goto end_of_exit
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
     echo Wsh.Echo MsgBox^( _
-    echo   " *  Harap aktifkan USB Debugging terlebih dahulu sebelum"  + vbCrLf + _
-    echo   "     mengeksekusi inject update.zip [Untuk membaca cara"  + vbCrLf + _
-    echo   "     mengaktifkan USB debugging, dengan mengetik]:"  + vbCrLf + _
+    echo   "  *   Harap aktifkan mode USB Debugging terlebih dahulu sebelum"  + vbCrLf + _
+    echo   "       mengeksekusi inject update.zip [Untuk mengetahui bagaimana cara"  + vbCrLf + _
+    echo   "       mengaktifkan mode USB debugging, dengan mengetik]:"  + vbCrLf + _
     echo   vbCrLf + _
-    echo   "           %~nx0 --readme" + vbCrLf + _
+    echo   "             %~nx0 --readme" + vbCrLf + _
     echo   vbCrLf + _
-    echo   " *  Apabila HP terpasang kartu SIM, skrip akan terotomatis"  + vbCrLf + _
-    echo   "     mengaktifkan Mode Pesawat."  + vbCrLf + _
+    echo   "  *   Apabila HP terpasang kartu SIM, skrip ini akan terotomatis"  + vbCrLf + _
+    echo   "       mengaktifkan mode Pesawat."  + vbCrLf + _
     echo   vbCrLf + _
     echo   "NOTE:"  + vbTab +  "Harap baca dahulu sebelum eksekusi. Segala kerusakan/"  + vbCrLf + _
     echo              vbTab +  "apapun yang terjadi itu diluar tanggung jawab pembuat file"  + vbCrLf + _
@@ -280,19 +281,11 @@ call "%basedir%\adb" shell "am broadcast -a android.intent.action.AIRPLANE_MODE"
 echo Preparing version file %FILE% to injecting device...
 call "%basedir%\adb" push "%FILE%" /sdcard/adupsfota/update.zip
 echo Checking file...
+call timeout /nobreak /t 4 > nul 2>&1
 echo Verifying file...
 call timeout /nobreak /t 12 > nul 2>&1
 
 :: Calling FOTA update
-echo Checking updates...
-for %%x in (%1 %2 %3) do ^
-for %%p in (-n --non-market) do ^
-if %%x!==%%p! set "NON_MARKET=1"
-if defined NON_MARKET (
-    call "%basedir%\adb" shell "settings put global install_non_market_apps 1"
-    call "%basedir%\adb" shell "settings put secure install_non_market_apps 1"
-)
-
 echo Cleaning FOTA update...
 call "%basedir%\adb" shell "pm clear com.smartfren.fota"
 
@@ -307,11 +300,20 @@ call "%basedir%\adb" shell "input keyevent 23" > nul 2>&1
 :updating
 echo Updating...
 call "%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (0,1,20) do ^
+for /l %%a in (1,1,20) do ^
 call "%basedir%\adb" shell "input keyevent 20" > nul 2>&1
 call "%basedir%\adb" shell "input keyevent 23" > nul 2>&1
 call timeout /nobreak /t 10 > nul 2>&1
 call "%basedir%\adb" wait-for-device > nul 2>&1
+
+for %%x in (%1 %2 %3) do ^
+for %%p in (-n --non-market) do ^
+if %%x!==%%p! set "NON_MARKET=1"
+if defined NON_MARKET (
+    echo Enabling install non market app...
+    call "%basedir%\adb" shell "settings put global install_non_market_apps 1"
+    call "%basedir%\adb" shell "settings put secure install_non_market_apps 1"
+)
 
 :: Complete
 > "%temp%\dialog.vbs" (echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^))
@@ -330,7 +332,10 @@ call :end_of_exit
 if defined run_temporary (
     echo Removing temporary program files...
     call "%basedir%\adb" kill-server
-    for %%i in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do del /q "%basedir%\%%i" > nul 2>&1
+    for %%i in (adb.exe AdbWinApi.dll AdbWinApi.dll.dat AdbWinUsbApi.dll) do (
+    attrib -s -h "%basedir%\%%i" > nul 2>&1
+    del /q "%basedir%\%%i" > nul 2>&1
+    )
 )
 @ goto :eof
 
@@ -351,31 +356,31 @@ if defined run_temporary (
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
     echo Wsh.Echo MsgBox^( _
-    echo   "Untuk mengaktifkan Debugging USB pada Andromax Prime"  + vbCrLf + _
+    echo   "Untuk mengaktifkan mode USB debugging pada Haier F17A1H"  + vbCrLf + _
     echo   "sebagai berikut:"  + vbCrLf + _
     echo   vbCrLf + _
-    echo   "  *   Dial/Tekan *#*#83781#*#*"  + vbCrLf + _
-    echo   "  *   Slide 2 (debug & log)."  + vbCrLf + _
-    echo   "  *   Design For Test."  + vbCrLf + _
-    echo   "  *   CMCC lalu tekan OK."  + vbCrLf + _
-    echo   "  *   MTBF." + vbCrLf  + _
-    echo   "  *   Lalu tekan MTBF."  + vbCrLf + _
-    echo   "  *   Please Wait."  + vbCrLf + _
-    echo   "  *   Pilih dan tekan Confirm."  + vbCrLf + _
-    echo   "  *   Kalau sudah lalu Mulai Ulang (restart HP)."  + vbCrLf + _
-    echo   "  *   Selamat USB Debug telah aktif."  + vbCrLf + _
+    echo   "  *   Dial ke nomor *#*#83781#*#*"  + vbCrLf + _
+    echo   "  *   Masuk ke slide 2 (DEBUG&LOG)."  + vbCrLf + _
+    echo   "  *   Pilih 'Design For Test'."  + vbCrLf + _
+    echo   "  *   Pilih 'CMCC', lalu tekan OK."  + vbCrLf + _
+    echo   "  *   Pilih 'MTBF'." + vbCrLf  + _
+    echo   "  *   Lalu pilih 'MTBF Start'."  + vbCrLf + _
+    echo   "  *   Tunggu beberapa saat."  + vbCrLf + _
+    echo   "  *   Pilih 'Confirm'."  + vbCrLf + _
+    echo   "  *   Kalau sudah mulai ulang/restart HP nya."  + vbCrLf + _
+    echo   "  *   Selamat USB debugging telah aktif."  + vbCrLf + _
     echo   vbCrLf + _
     echo   vbCrLf + _
     echo   "Jika masih tidak aktif, ada cara lain sebagai berikut:"  + vbCrLf + _
     echo   vbCrLf + _
-    echo   "  *   Dial/Tekan *#*#257384061689#*#*"  + vbCrLf + _
+    echo   "  *   Dial ke nomor *#*#257384061689#*#*"  + vbCrLf + _
     echo   "  *   Aktifkan 'USB Debugging'."  + vbCrLf + _
     echo   "  *   Izinkan aktifkan USB Debugging pada popupnya."  + vbCrLf + _
     echo   vbCrLf + _
     echo   vbCrLf + _
     echo   "Tinggal jalankan skrip ini dengan membuka Command"  + vbCrLf + _
-    echo   "Prompt, maka akan muncul popup izinkan sambung USB"  + vbCrLf + _
-    echo   "Debugging di Andromax Prime.", _
+    echo   "Prompt, dan jalankan adb start-server maka akan muncul"  + vbCrLf + _
+    echo   "popup izinkan sambung USB Debugging di Haier F17A1H.", _
     echo   vbOKOnly, _
     echo   "Read-Me" _
     echo ^)
@@ -405,13 +410,14 @@ call :wscript dialog.vbs
     echo   "USAGE:  %~nx0 <update.zip file>"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "Additional arguments are maybe to know:"  + vbCrLf + _
-    echo   "   -a, --download-adb"   + vbTab +  "    Run without check ADB and Fastboot module"  + vbCrLf + _
-    echo                                        "    (ADB program permanently placed. Android only use)."  + vbCrLf + _
-    echo   "   -h, --help"           + vbTab +  "    Show help information for this script."  + vbCrLf + _
-    echo   "   -n, --non-market"     + vbTab +  "    Inject with install non market (root.zip)."  + vbCrLf + _
-    echo   "   -Q, --run-temporary"  + vbTab +  "    Run without check ADB and Fastboot module"  + vbCrLf + _
-    echo                                        "    (ADB program not permanently placed)."  + vbCrLf + _
-    echo   "   --readme"             + vbTab +  "    Show read-me (advanced help).", _
+    echo   "   -a, --download-adb"        + vbTab +  "Run without check ADB and Fastboot module"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "(ADB program permanently placed. Android"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "only use)."  + vbCrLf + _
+    echo   "   -h, --help"        + vbTab + vbTab +  "Show help information for this script."  + vbCrLf + _
+    echo   "   -n, --non-market"  + vbTab + vbTab +  "Inject with install non market."  + vbCrLf + _
+    echo   "   -Q, --run-temporary"       + vbTab +  "Run without check ADB and Fastboot module"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "(ADB program not permanently placed)."  + vbCrLf + _
+    echo   "   --readme"          + vbTab + vbTab +  "Show read-me (advanced help).", _
     echo   vbOKOnly, _
     echo   "Usage" _
     echo ^)

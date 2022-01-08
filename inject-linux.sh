@@ -35,31 +35,31 @@ Additional arguments are maybe to know:
 
 README()
 {
-    README="Untuk mengaktifkan Debugging USB pada Andromax Prime
+    README="Untuk mengaktifkan mode USB debugging pada Haier F17A1H
 sebagai berikut:
 
-  *  Dial/Tekan *#*#83781#*#*
-  *  Slide 2 (debug & log).
-  *  Design For Test.
-  *  CMCC lalu tekan OK.
-  *  MTBF.
-  *  Lalu tekan MTBF.
-  *  Please Wait.
-  *  Pilih dan tekan Confirm.
-  *  Kalau sudah lalu Mulai Ulang (restart HP).
-  *  Selamat USB Debug telah aktif.
+  *   Dial ke nomor *#*#83781#*#*
+  *   Masuk ke slide 2 (DEBUG&LOG).
+  *   Pilih 'Design For Test'.
+  *   Pilih 'CMCC', lalu tekan OK.
+  *   Pilih 'MTBF'.
+  *   Lalu pilih 'MTBF Start'.
+  *   Tunggu beberapa saat.
+  *   Pilih 'Confirm'.
+  *   Kalau sudah mulai ulang/restart HP nya.
+  *   Selamat USB debugging telah aktif.
 
 
 Jika masih tidak aktif, ada cara lain sebagai berikut:
 
-  *  Dial/Tekan *#*#257384061689#*#*
-  *  Aktifkan 'USB Debugging'.
-  *  Izinkan aktifkan USB Debugging pada popupnya.
+  *   Dial ke nomor *#*#257384061689#*#*
+  *   Aktifkan 'USB Debugging'.
+  *   Izinkan aktifkan USB Debugging pada popupnya.
 
 
-Tinggal jalankan skrip ini dengan membuka Terminal,
-maka akan muncul popup izinkan sambung USB Debugging
-di Andromax Prime."
+Tinggal jalankan skrip ini dengan membuka Command
+Prompt, dan jalankan adb start-server maka akan muncul
+popup izinkan sambung USB Debugging di Haier F17A1H."
 
     [ "$DIALOG" == "kdialog" ] && {
         $DIALOG --title "Read-Me" --msgbox "$README"
@@ -122,11 +122,11 @@ done
     exit 1
 }
 [[ $(uname -sr) < "Linux 4.4"* ]] && {
-    echo "This script requirements at least Linux Kernel version 4.4."
+    echo "This script requires at least Linux Kernel version 4.4."
     exit 1
 }
 [[ $(uname -p) != *"64" ]] && {
-    echo "This script requirements a 64-bit Operating System."
+    echo "This script requires a 64-bit Operating System."
     exit 1
 }
 
@@ -149,7 +149,7 @@ esac
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z $FILE ] && {
+    [ -z "$FILE" ] && {
         echo "File not found."
         exit 1
     }
@@ -179,11 +179,11 @@ $FULLPATH"                       \
 $DIALOG                                                      \
 --title "NOTE:  Harap baca dahulu sebelum eksekusi"          \
 --msgbox                                                     \
-" *  Harap aktifkan USB Debugging terlebih dahulu sebelum
-    mengeksekusi inject update.zip [ Untuk membaca cara
-    mengaktifkan USB debugging, dengan mengetik ]:
+" *  Harap aktifkan mode USB Debugging terlebih dahulu sebelum
+    mengeksekusi inject update.zip [ Untuk mengetahui bagaimana
+    cara mengaktifkan mode USB debugging, dengan mengetik ]:
        $0 --readme
- *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
+ *  Apabila HP terpasang kartu SIM, skrip ini akan terotomatis
     mengaktifkan mode pesawat.
 
 Perlu diperhatikan:
@@ -243,26 +243,11 @@ echo "Activating airplane mode..."
 echo "Preparing version file $FILE to injecting device..."
 "$ADBDIR/adb" push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
+sleep 4
 echo "Verifying file..."
 sleep 12
 
 ## Calling FOTA update
-echo "Checking updates..."
-for args in "$1" "$2" "$3"
-do case $args in
-    "--non-market" | "-n" )
-        NON_MARKET=1
-        break
-        ;;
-    * )
-        ;;
-esac
-done
-[[ "$NON_MARKET" ]] && {
-    "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
-    "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
-}
-
 echo "Cleaning FOTA updates..."
 "$ADBDIR/adb" shell "pm clear com.smartfren.fota"
 
@@ -282,6 +267,22 @@ done
 "$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 sleep 10
 "$ADBDIR/adb" wait-for-device > /dev/null 2>&1
+
+for args in "$1" "$2" "$3"
+do case $args in
+    "--non-market" | "-n" )
+        NON_MARKET=1
+        break
+        ;;
+    * )
+        ;;
+esac
+done
+[[ "$NON_MARKET" ]] && {
+    echo "Enabling install non market app..."
+    "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
+    "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
+}
 
 ## Complete
 [[ "$DIALOG" == "kdialog" ]] && \

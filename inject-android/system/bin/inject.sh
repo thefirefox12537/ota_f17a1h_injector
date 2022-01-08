@@ -14,8 +14,8 @@ do [ -f "$file" ] && {
 }
 done
 
-ID=$(id)
-ID=${ID%%\(*}; ID=${ID#*=}
+ID="$(id)"; ID="${ID%% *}"
+ID="${ID%%\(*}"; ID="${ID#*=}"
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
@@ -40,31 +40,31 @@ Additional arguments are maybe to know:
 
 README()
 {
-    echo -e "Untuk mengaktifkan Debugging USB pada Andromax Prime
+    echo -e "Untuk mengaktifkan mode USB debugging pada Haier F17A1H
 sebagai berikut:
 
-  *  Dial/Tekan *#*#83781#*#*
-  *  Slide 2 (debug & log).
-  *  Design For Test.
-  *  CMCC lalu tekan OK.
-  *  MTBF.
-  *  Lalu tekan MTBF.
-  *  Please Wait.
-  *  Pilih dan tekan Confirm.
-  *  Kalau sudah lalu Mulai Ulang (restart HP).
-  *  Selamat USB Debug telah aktif.
+  *   Dial ke nomor *#*#83781#*#*
+  *   Masuk ke slide 2 (DEBUG&LOG).
+  *   Pilih 'Design For Test'.
+  *   Pilih 'CMCC', lalu tekan OK.
+  *   Pilih 'MTBF'.
+  *   Lalu pilih 'MTBF Start'.
+  *   Tunggu beberapa saat.
+  *   Pilih 'Confirm'.
+  *   Kalau sudah mulai ulang/restart HP nya.
+  *   Selamat USB debugging telah aktif.
 
 
 Jika masih tidak aktif, ada cara lain sebagai berikut:
 
-  *  Dial/Tekan *#*#257384061689#*#*
-  *  Aktifkan 'USB Debugging'.
-  *  Izinkan aktifkan USB Debugging pada popupnya.
+  *   Dial ke nomor *#*#257384061689#*#*
+  *   Aktifkan 'USB Debugging'.
+  *   Izinkan aktifkan USB Debugging pada popupnya.
 
 
-Tinggal jalankan skrip ini dengan membuka Terminal,
-maka akan muncul popup izinkan sambung USB Debugging
-di Andromax Prime.
+Tinggal jalankan skrip ini dengan membuka Command
+Prompt, dan jalankan adb start-server maka akan muncul
+popup izinkan sambung USB Debugging di Haier F17A1H.
 
 
 Special thanks to:
@@ -130,7 +130,7 @@ esac
     exit 1
 }
 [[ $(uname -sr) < "Linux 3"* ]] && {
-    echo "This script requirements at least Linux Kernel version 3.0."
+    echo "This script requires at least Linux Kernel version 3.0."
     exit 1
 }
 [ ! -e "$MAGISK" ] && {
@@ -138,21 +138,17 @@ esac
     exit 1
 }
 case $1 in
-    "--run-temporary" | "-Q" |
-    "--download-adb"  | "-a" )
-        [ ! -d "/data/data/com.termux" ] && {
+    "--run-temporary" | "--download-adb"  | "-Q" | "-a" )
+        [ ! -d "/data/data/com.termux" ] && \
+        PREFIX="/data/data/com.termux/files/usr" || {
             echo "This script requires Termux shell installed."
             exit 1
         }
         for split in $(printf "${PATH//:/$'\n'}")
-        do [ "$split" == "/data/data/com.termux/files/usr/bin" ] && TERMUX_ENV=1
+        do [ "$split" == "$PREFIX/bin" ] && TERMUX_ENV=1
         done
-        [ -z $TERMUX_ENV ] && \
-        PATH="/data/data/com.termux/files/usr/bin"
-        command -v wget > /dev/null 2>&1 || {
-            apt-get update > /dev/null 2>&1
-            apt-get -y install wget > /dev/null 2>&1
-        }
+        [ -z $TERMUX_ENV ] && PATH="$PREFIX/bin:$PATH"
+        command -v wget > /dev/null 2>&1 || pkg install -y wget > /dev/null 2>&1
         ;;
     * )
         ;;
@@ -161,7 +157,7 @@ esac
 
 ## Main Menu
 [[ "$1" ]] && {
-    [ -z $FILE ] && {
+    [ -z "$FILE" ] && {
         echo "File not found."
         exit 1
     }
@@ -190,11 +186,11 @@ esac
 ## NOTE
 echo -ne "NOTE:  Harap baca dahulu sebelum eksekusi
 
- *  Harap aktifkan USB Debugging terlebih dahulu sebelum
-    mengeksekusi inject update.zip [ Untuk membaca cara
-    mengaktifkan USB debugging, dengan mengetik ]:
+ *  Harap aktifkan mode USB Debugging terlebih dahulu sebelum
+    mengeksekusi inject update.zip [ Untuk mengetahui bagaimana
+    cara mengaktifkan mode USB debugging, dengan mengetik ]:
        $0 --readme
- *  Apabila HP terpasang kartu SIM, skrip akan terotomatis
+ *  Apabila HP terpasang kartu SIM, skrip ini akan terotomatis
     mengaktifkan mode pesawat.
 
 Perlu diperhatikan:
@@ -208,9 +204,8 @@ pause
 ## Checking ADB programs
 echo "Checking ADB program..."
 case $1 in
-    "--run-temporary" | "-Q" | \
-    "--download-adb"  | "-a" )
-        echo "Downloading ADB binary from Magisk Modules repository: ADB and Fastboot NDK..."
+    "--run-temporary" | "--download-adb" | "-Q" | "-a" )
+        echo "Downloading 'ADB and Fastboot for Android NDK' from Magisk Modules Repository..."
         for i in adb adb.bin adb.bin-armeabi
         do [ -e "$ADBDIR/$i" ] && \
         ADB_EXIST=1 || {
@@ -225,7 +220,7 @@ case $1 in
     * )
         [ -d "$ADBDIR" ] && \
         ADB_EXIST=1 || {
-            echo -e "ADB program cannot be found on this device. \nMake sure ADB and Fastboot Magisk Modules already installed."
+            echo -e "ADB program cannot be found on this device. \nMake sure 'ADB and Fastboot for Android NDK' Magisk Modules already installed."
             exit 1
         }
         ;;
@@ -265,26 +260,11 @@ echo "Activating airplane mode..."
 echo "Preparing version file $FILE to injecting device..."
 "$ADBDIR/adb" push "$FILE" /sdcard/adupsfota/update.zip
 echo "Checking file..."
+sleep 4
 echo "Verifying file..."
 sleep 12
 
 ## Calling FOTA update
-echo "Checking updates..."
-for args in "$1" "$2" "$3"
-do case $args in
-    "--non-market" | "-n" )
-        NON_MARKET=1
-        break
-        ;;
-    * )
-        ;;
-esac
-done
-[[ "$NON_MARKET" ]] && {
-    "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
-    "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
-}
-
 echo "Cleaning FOTA updates..."
 "$ADBDIR/adb" shell "pm clear com.smartfren.fota"
 
@@ -305,6 +285,22 @@ done
 "$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 sleep 10
 "$ADBDIR/adb" wait-for-device > /dev/null 2>&1
+
+for args in "$1" "$2" "$3"
+do case $args in
+    "--non-market" | "-n" )
+        NON_MARKET=1
+        break
+        ;;
+    * )
+        ;;
+esac
+done
+[[ "$NON_MARKET" ]] && {
+    echo "Enabling install non market app..."
+    "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
+    "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
+}
 
 ## Complete
 echo "Proses telah selesai"
