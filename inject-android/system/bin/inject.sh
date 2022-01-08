@@ -139,7 +139,7 @@ esac
 }
 case $1 in
     "--run-temporary" | "--download-adb"  | "-Q" | "-a" )
-        [ ! -d "/data/data/com.termux" ] && \
+        [ -d "/data/data/com.termux" ] && \
         PREFIX="/data/data/com.termux/files/usr" || {
             echo "This script requires Termux shell installed."
             exit 1
