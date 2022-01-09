@@ -19,7 +19,7 @@ ID="${ID%%\(*}"; ID="${ID#*=}"
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
-ADBDIR="$MAGISK_MODULE/adb-ndk/bin"
+ADBDIR="$MAGISK_MODULE/adb-ndk"
 
 USAGE()
 {
@@ -29,7 +29,8 @@ USAGE: $0 <update.zip file>
 
 Additional arguments are maybe to know:
   -a, --download-adb   Run without check ADB and Fastboot module
-                       (ADB program permanently placed. Android only use).
+                       (ADB program permanently placed. Android
+                       only use).
   -h, --help           Show help information for this script.
   -n, --non-market     Inject with install non market.
   -Q, --run-temporary  Run without check ADB and Fastboot module
@@ -110,13 +111,19 @@ case $1 in
         mkdir "/data/local/tmp" > /dev/null 2>&1
         ADBDIR="/data/local/tmp"
         run_temporary=1
+        [[ "$0" = "/dev/fd/"* ]] && \
+        echo "Running online script mode in temporary command..."
         ;;
     "--download-adb" | "-a" )
         [ ! -d "/data/local/bin" ] && \
         mkdir "/data/local/bin" > /dev/null 2>&1
         ADBDIR="/data/local/bin"
+        [[ "$0" == "/dev/fd/"* ]] && \
+        echo "Running online script mode..."
         ;;
     * )
+        [[ "$0" == "/dev/fd/"* ]] && \
+        echo "Running online script..."
         ;;
 esac
 
@@ -148,7 +155,10 @@ case $1 in
         do [ "$split" == "$PREFIX/bin" ] && TERMUX_ENV=1
         done
         [ -z $TERMUX_ENV ] && PATH="$PREFIX/bin:$PATH"
-        command -v wget > /dev/null 2>&1 || pkg install -y wget > /dev/null 2>&1
+        command -v wget > /dev/null 2>&1 || {
+            pkg update -y > /dev/null 2>&1
+            pkg install -y wget > /dev/null 2>&1
+        }
         ;;
     * )
         ;;
@@ -205,33 +215,31 @@ pause
 echo "Checking ADB program..."
 case $1 in
     "--run-temporary" | "--download-adb" | "-Q" | "-a" )
-        echo "Downloading 'ADB and Fastboot for Android NDK' from Magisk Modules Repository..."
-        for i in adb adb.bin adb.bin-armeabi
-        do [ -e "$ADBDIR/$i" ] && \
-        ADB_EXIST=1 || {
-            wget \
-              -qO "$ADBDIR/$i" \
-              https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i
-            chmod 755 "$ADBDIR/$i" > /dev/null 2>&1
-            ADB_SUCCESS=1
-        }
-        done
+        [ ! -e "$ADBDIR/adb" ] && {
+            echo "Downloading 'ADB and Fastboot for Android NDK' from Magisk Modules Repository..."
+            for i in adb adb.bin adb.bin-armeabi
+            do
+                wget -qO \
+                  "$ADBDIR/$i" \
+                  https://github.com/Magisk-Modules-Repo/adb-ndk/raw/master/bin/$i 2>&1 || {
+                    echo -e "Failed download 'ADB and Fastboot for Android NDK' from Magisk Modules Repository. \nPlease try again, make sure your network connected."
+                    exit 1
+                }
+                chmod 755 "$ADBDIR/$i" > /dev/null 2>&1
+            done
+        } || echo "ADB program was successfully placed."
         ;;
     * )
-        [ -d "$ADBDIR" ] && \
-        ADB_EXIST=1 || {
+        [ -d "$ADBDIR" ] && {
+            [ -e "$ADBDIR/bin/adb" ] && ADBDIR="$ADBDIR/bin"
+            [ -e "$ADBDIR/system/bin/adb" ] && ADBDIR="$ADBDIR/system/bin"
+            echo "ADB program was availabled on this device."
+        } || {
             echo -e "ADB program cannot be found on this device. \nMake sure 'ADB and Fastboot for Android NDK' Magisk Modules already installed."
             exit 1
         }
         ;;
 esac
-
-[ ! -z $ADB_EXIST ] && echo "ADB program was availabled on this device."
-[ ! -z $ADB_SUCCESS ] && \
-[ ! -e "$ADBDIR/adb" ] && {
-    echo "Failed getting ADB program. Please try again, make sure your network connected."
-    exit 1
-} || echo "ADB program was successfully placed."
 
 ## Starting ADB service
 start-adb

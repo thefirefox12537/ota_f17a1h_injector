@@ -24,7 +24,8 @@ USAGE: $0 <update.zip file>
 
 Additional arguments are maybe to know:
   -a, --download-adb   Run without check ADB and Fastboot module
-                       (ADB program permanently placed. Android only use).
+                       (ADB program permanently placed. Android
+                       only use).
   -h, --help           Show help information for this script.
   -n, --non-market     Inject with install non market.
   -Q, --run-temporary  Run without check ADB and Fastboot module
@@ -95,6 +96,9 @@ remove-temporary() {
 }
 
 
+[[ "$0" = "/dev/fd/"* ]] && \
+echo "Running online script mode..."
+
 ## Set dialog screen program
 for d in dialog whiptail kdialog
 do command -v $d > /dev/null 2>&1 && DIALOG="$d"
@@ -109,7 +113,9 @@ done
     exit 1
 }
 
-[ -e /etc/os-release ] && . /etc/os-release 2> /dev/null || . /usr/lib/os-release 2> /dev/null
+[ -e /etc/os-release ] && \
+. /etc/os-release 2> /dev/null || \
+. /usr/lib/os-release 2> /dev/null
 
 [[ "$ID" = "debian" || "$ID_LIKE" = *"debian"* || "$ID_LIKE" = *"ubuntu"* ]] && DIST_CORE="debian"
 [[ "$ID" = *"rhel"* || "$ID_LIKE" = *"rhel"*   || "$ID_LIKE" = "redhat"* ]] && DIST_CORE="redhat"
@@ -196,11 +202,10 @@ Perlu diperhatikan:
 echo "Checking ADB program..."
 
 ## Downloading ADB programs if not exist
-[ -e "$ADBDIR/adb" ] && \
-echo "ADB program was availabled on the computer or this folder." || {
+[ ! -e "$ADBDIR/adb" ] && {
     echo "Downloading Android SDK Platform Tools..."
-    wget \
-      -qO "/var/tmp/platform-tools.zip" \
+    wget -qO \
+      "/var/tmp/platform-tools.zip" \
       https://dl.google.com/android/repository/platform-tools-latest-linux.zip
     echo "Extracting Android SDK Platform Tools..."
     unzip \
@@ -213,7 +218,7 @@ echo "ADB program was availabled on the computer or this folder." || {
         echo "Failed getting ADB program. Please try again, make sure your network connected."
         exit 1
     } || echo "ADB program was successfully placed."
-}
+} || echo "ADB program was availabled on the computer or this folder."
 
 ## Starting ADB service
 start-adb
@@ -227,7 +232,7 @@ sleep 1; echo "Please plug USB to your devices."
 echo "Checking if your devices is F17A1H..."
 FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
 [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
-    [[ "$DIALOG" == "kdialog" ]] && \
+    [ "$DIALOG" == "kdialog" ] && \
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
     $DIALOG -msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
     remove-temporary
@@ -261,8 +266,8 @@ echo "Manipulating FOTA updates..."
 ## Start updating
 echo "Updating..."
 "$ADBDIR/adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for (( i=1; i<=20; i++ ))
-do "$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1
+while [ $COUNTER -le 20 ]
+do "$ADBDIR/adb" shell "input keyevent 20" > /dev/null 2>&1 && (( COUNTER+=1 ))
 done
 "$ADBDIR/adb" shell "input keyevent 23" > /dev/null 2>&1
 sleep 10
@@ -285,7 +290,7 @@ done
 }
 
 ## Complete
-[[ "$DIALOG" == "kdialog" ]] && \
+[ "$DIALOG" == "kdialog" ] && \
 $DIALOG --msgbox "Proses telah selesai" || \
 $DIALOG --msgbox "\n           Proses telah selesai" 8 48
 kill-adb
