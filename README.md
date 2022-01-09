@@ -5,6 +5,7 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
   *  Tool ini sebenarnya bukan baru, melainkan perbaikan dan penambahan dari tool-tool sebelumnya yang dibuat oleh para opreker ponsel Andromax Prime (**AdiRoot** dan **Ahka**). Jadi saya meneruskan perbaikan skrip saja yang lebih kompleks dari skrip perintah **AdiRoot** atau **Ahka**, dan setiap update ini ada versi-versi yang saya rilis itu sudah stabil atau terdapat bug, mohon dimaklumi.
   *  Saya senang kalau kalian yang berkunjung di sini untuk memberikan sebuah kritik dan masukan soal bug ini agar saya dapat memperbaiki di update selanjutnya.
 
+<img src="images/injectwithwin.jpg" alt="Injecting with PC (Windows Platform)" width="20%"/>  <img src="images/injectwithlinux.jpg" alt="Injecting with PC (Linux Platform)" width="28%"/>
 
 ## Download:
 Dibawah ini merupakan versi paling baru setiap saya mengupload. Silakan pilih sesuai dengan platform kalian masing-masing:
@@ -62,6 +63,8 @@ Apabila kalian tidak mau pasang module, bisa kalian pilih **shell script file** 
 /system/bin/sh /sdcard/Download/inject.sh "<path file update.zip>"
 ```
 
+<img src="images/androidterm.jpg" alt="Run in Android Terminal Emulator" width="25%"/>  <img src="images/androidtermux.jpg" alt="Run in Termux Android" width="25%"/>
+
 CATATAN PENTING:
   -  Penyimpanan internal `/sdcard`
   -  Penyimpanan eksternal `/storage/<ID serial kartu SD>`<br/>bisa kalian cek dengan perintah `su -c "ls /storage"` untuk mengetahui ID serial kartu SD kalian.
@@ -78,6 +81,8 @@ chmod 755 inject-linux.sh
 ```
 lalu jalankan perintahnya beserta file update.zip nya.
 
+<img src="images/linuxterm.png" alt="Run in Linux Terminal (Konsole)" width="60%"/>
+
 #### Windows
 
 Buka Command Prompt atau PowerShell di menu Start. Lalu masuk ke direktori tempat skrip **inject-win.bat** berada, jalankan dengan ketik:
@@ -85,7 +90,12 @@ Buka Command Prompt atau PowerShell di menu Start. Lalu masuk ke direktori tempa
 .\inject-win.bat "<path file update.zip>"
 ```
 
+<img src="images/wincmd.png" alt="Run in Windows Command Prompt" width="55%"/>
+
 Apabila kalian masih awam dengan Command Prompt, kalian juga cukup bisa manfaatkan fungsi drag-'n-drop dengan file ZIP ke skrip **inject-win.bat** nya di Windows File Explorer.
+
+<img src="images/windesktop.png" alt="Use drag 'n drop in Windows Desktop" width="35%"/>  <img src="images/winexplorer.png" alt="Use drag 'n drop in Windows File Explorer" width="45%"/>
+
 
 
 ### Jika kalian tidak sempat mendownload skrip, kalian bisa salin perintah dibawah ini dan tempelkan ke Command Prompt/Terminal dan tambahkan/ketik nama file update.zip yang akan di inject:
@@ -97,10 +107,14 @@ Sebelum jalankan perintah ini, pasang wget dulu `pkg install wget`, masuk `su -c
 $PREFIX/bin/bash <($PREFIX/bin/wget -qO- https://bit.ly/injectscript_android) -Q
 ```
 
+<img src="images/androidtermux2.jpg" alt="Run online command in Termux Android" width="30%"/>
+
 #### Linux
 ```bash
 bash <(wget -qO- https://bit.ly/injectscript_linux) -Q
 ```
+
+<img src="images/linuxterm2.png" alt="Run online command in Linux Terminal (Konsole)" width="60%"/>
 
 #### Windows (Command Prompt - Wajib terupdate Windows PowerShell versi 4.0 keatas)
 
@@ -114,6 +128,8 @@ Sedangkan di Windows 8 keatas
 powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
 
+<img src="images/wincmd2.png" alt="Run online command in Windows Command Prompt" width="55%"/>
+
 #### Windows (PowerShell versi 4.0 keatas)
 
 Bila komputer anda berada di versi Windows 7 SP1
@@ -125,6 +141,8 @@ Sedangkan di Windows 8 keatas
 ```powershell
 & ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
+
+<img src="images/winpwsh.png" alt="Run online command in PowerShell" width="65%"/>
 
 
 ### Bila butuh panduan mengenai mengaktifkan mode USB debugging pada Haier F17A1H (Andromax Prime), bisa ketik sebagai berikut:
