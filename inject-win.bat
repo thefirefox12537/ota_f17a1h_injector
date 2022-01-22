@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         01/04/2021  6:30am
+@ :: Date/Time Modified:         01/22/2021  7:40pm
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,5,0
-@ ::    Product Version:   1,5,0
+@ ::    File version:      1,5,1
+@ ::    Product Version:   1,5,1
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.5.0
+@ ::    FileVersion:       1.5.1
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.5.0
+@ ::    ProductVersion:    1.5.1
 @ ::
 
 
@@ -60,51 +60,29 @@ for %%v in (Daytona Cairo Hydra Neptune NT) do ver | findstr /r /c:"%%v" > nul &
 if "%OLD_WINNT%" == "1" goto winnt
 if not defined OLD_WINNT (setlocal EnableExtensions EnableDelayedExpansion)
 
-set "_UPPERCASE=ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-set "_LOWERCASE=abcdefghijklmnopqrstuvwxyz"
-
 set "basedir=%~dp0"
 set "basedir=%basedir:~0,-1%"
-if %1!==! goto USAGE
-
-if %1!==--readme! goto README
-for %%p in (-h --help) do ^
-if %1!==%%p! goto USAGE
-for %%p in (-Q --run-temporary) do ^
-if %1!==%%p! (set "basedir=%temp%" && set "run_temporary=1")
-for %%p in (-a --download-adb) do ^
-if %1!==%%p! (set "MESSAGE_ERROR=You cannot run this argument in Windows." && goto :error)
 
 for %%x in (%1 %2 %3) do ^
 if exist %%x (set "FILE=%%x" && set "FULLPATH=%%~dpfx" && set "EXTENSION=%%~xx")
+set "_UPPERCASE=ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+set "_LOWERCASE=abcdefghijklmnopqrstuvwxyz"
 for /l %%a in (0,1,25) do ^
 call set "_from=%%_UPPERCASE:~%%a,1%%" && ^
 call set "_to=%%_LOWERCASE:~%%a,1%%" && ^
 call set "EXTENSION=%%EXTENSION:!_from!=!_to!%%"
-if not defined FILE (
-    echo File not found.
-    goto end_of_exit
-)
-
-if not "%EXTENSION:~1%" == "zip" (
-    echo File is not ZIP type.
-    goto end_of_exit
-)
-
-set "FILE=%FILE:"=%"
-set "FULLPATH=%FULLPATH:"=""%"
 
 :: Checking your system if approriate with requirements
 :: Please wait at the moments.
 :gettingrequire
 for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') do ^
-if "%%v.%%w" == "6.1" if %%x LEQ 7600 (set "OLDWIN=1") && ^
-if "%%v.%%w" == "6.0"  (set "OLDWIN=1") && ^
-if "%%v.%%w" == "5.3"  (set "OLDWIN=1") && ^
-if "%%v.%%w" == "5.2"  (set "OLDWIN=1") && ^
-if "%%w.%%x" == "5.1"  (set "OLDWIN=1") && ^
-if "%%w.%%x" == "5.00" (set "OLDWIN=1")
-if "%OLDWIN%" == "1" (
+if "%%v.%%w" == "6.1" (if %%x LEQ 7600 (set "OLD_WIN=1")) else ^
+if "%%v.%%w" == "6.0"  (set "OLD_WIN=1") else ^
+if "%%v.%%w" == "5.3"  (set "OLD_WIN=1") else ^
+if "%%v.%%w" == "5.2"  (set "OLD_WIN=1") else ^
+if "%%w.%%x" == "5.1"  (set "OLD_WIN=1") else ^
+if "%%w.%%x" == "5.00" (set "OLD_WIN=1")
+if "%OLD_WIN%" == "1" (
     set "MESSAGE_ERROR=This script requires Windows 7 Service Pack 1 or latest"
     goto :error
 )
@@ -120,11 +98,33 @@ if defined errorcapt (
     goto :error
 )
 
+if exist "%temp%\run_online.tmp" echo Running online script mode...
+
+if %1!==! goto USAGE
+if %1!==--readme! goto README
+for %%p in (-h --help) do ^
+if %1!==%%p! goto USAGE
+for %%p in (-Q --run-temporary) do ^
+if %1!==%%p! (set "basedir=%temp%" && set "run_temporary=1")
+for %%p in (-a --download-adb) do ^
+if %1!==%%p! (set "MESSAGE_ERROR=You cannot run this argument in Windows." && goto :error)
+
+if not defined FILE (
+    set "MESSAGE_ERROR=File not found."
+    goto :error
+)
+
+if not "%EXTENSION:~1%" == "zip" (
+    set "MESSAGE_ERROR=File is not ZIP type."
+    goto :error
+)
 
 :: Main Menu
+set "FILE=%FILE:"=%"
+set "FULLPATH=%FULLPATH:"=""%"
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo Wsh.Echo MsgBox^( _
+    echo WScript.Echo MsgBox^( _
     echo   "Anda yakin? File yang dipilih:"  + vbCrLf + _
     echo   "%FULLPATH%", _
     echo   vbYesNo, _
@@ -138,7 +138,7 @@ if %ret% EQU 7 goto end_of_exit
 :: NOTE
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo Wsh.Echo MsgBox^( _
+    echo WScript.Quit MsgBox^( _
     echo   "  *   Harap aktifkan mode USB Debugging terlebih dahulu sebelum"  + vbCrLf + _
     echo   "       mengeksekusi inject update.zip [Untuk mengetahui bagaimana cara"  + vbCrLf + _
     echo   "       mengaktifkan mode USB debugging, dengan mengetik]:"  + vbCrLf + _
@@ -156,7 +156,7 @@ call :wscript dialog.vbs
     echo   vbOKOnly _
     echo ^)
 )
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
 del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :: Checking ADB programs
@@ -165,7 +165,13 @@ echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
 :adbnotexist
-if not exist "%basedir%\adb.exe" (
+for /f "tokens=*" %%e in ('where adb.exe 2^> nul') do set "ADBDIR=%%~dpe"
+if not defined run_temporary (
+    if defined ADBDIR (
+    echo ADB program was availabled on the computer.
+    set "basedir=%ADBDIR:~0,-1%"
+    )
+) else if not exist "%basedir%\adb.exe" (
     del /q "%temp%\platform-tools.zip" > nul 2>&1
     echo Downloading Android SDK Platform Tools...
     call powershell -noprofile -command ^
@@ -195,9 +201,7 @@ if defined ADB_SUCCESS ^
 if not exist "%basedir%\adb.exe" (
     echo Failed getting ADB program. Please try again, make sure your network connected.
     @ goto :eof
-) else (
-    echo ADB program was successfully placed.
-)
+) else (echo ADB program was successfully placed.)
 
 :checkadbdriver
 echo Checking ADB Interface driver installed...
@@ -242,9 +246,7 @@ if defined DRIVER_SUCCESS for /f usebackq %%a in (`%commands%`) do ^
 if not exist %SystemRoot%\inf\%%a (
     echo Failed installing driver. Please try again.
     @ goto :eof
-) else (
-    echo Driver successfully installed.
-)
+) else (echo Driver successfully installed.)
 
 :: Starting ADB service
 :start_adb
@@ -262,9 +264,8 @@ echo Connected.
 :: Checking if your devices is F17A1H
 :checkif_F17A1H
 echo Checking if your devices is F17A1H...
-for /f "tokens=*" %%d in ('call "%basedir%\adb" shell "getprop ro.fota.device" 2^> nul ^| findstr /r /c:"F17A1H"') do ^
-set "FOTA_DEVICE=%%d"
-if not "%FOTA_DEVICE%" == "Andromax F17A1H" (
+for /f "tokens=*" %%d in ('call "%basedir%\adb" shell "getprop ro.fota.device" 2^> nul') do ^
+if not "%%d" == "Andromax F17A1H" (
     set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
     call :remove_temporary
     goto :error
@@ -316,8 +317,8 @@ if defined NON_MARKET (
 )
 
 :: Complete
-> "%temp%\dialog.vbs" (echo Wsh.Echo MsgBox^("Proses telah selesai", vbOKOnly^))
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+> "%temp%\dialog.vbs" (echo WScript.Quit MsgBox^("Proses telah selesai", vbOKOnly^))
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
 del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :kill_adb
@@ -355,7 +356,7 @@ if defined run_temporary (
 :README
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo Wsh.Echo MsgBox^( _
+    echo WScript.Quit MsgBox^( _
     echo   "Untuk mengaktifkan mode USB debugging pada Haier F17A1H"  + vbCrLf + _
     echo   "sebagai berikut:"  + vbCrLf + _
     echo   vbCrLf + _
@@ -384,8 +385,10 @@ call :wscript dialog.vbs
     echo   vbOKOnly, _
     echo   "Read-Me" _
     echo ^)
-    echo.
-    echo Wsh.Echo MsgBox^( _
+)
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+> "%temp%\dialog.vbs" (
+    echo WScript.Quit MsgBox^( _
     echo   "Special thanks to:"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "    1.   Adi Subagja"  + vbCrLf + _
@@ -395,7 +398,7 @@ call :wscript dialog.vbs
     echo   "Read-Me" _
     echo ^)
 )
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
 del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
@@ -404,7 +407,7 @@ call :end_of_exit
 :USAGE
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo Wsh.Echo MsgBox^( _
+    echo WScript.Quit MsgBox^( _
     echo   "Inject update.zip for Haier F17A1H"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "USAGE:  %~nx0 <update.zip file>"  + vbCrLf + _
@@ -422,14 +425,14 @@ call :wscript dialog.vbs
     echo   "Usage" _
     echo ^)
 )
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
 del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
 :error
-> "%temp%\dialog.vbs" (echo Wsh.Echo MsgBox^("%MESSAGE_ERROR%", vbCritical^))
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript > nul
+> "%temp%\dialog.vbs" (echo Wsh.Quit MsgBox^("%MESSAGE_ERROR%", vbCritical^))
+call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
 del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof

@@ -5,7 +5,7 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
   *  Tool ini sebenarnya bukan baru, melainkan perbaikan dan penambahan dari tool-tool sebelumnya yang dibuat oleh para opreker ponsel Andromax Prime (**AdiRoot** dan **Ahka**). Jadi saya meneruskan perbaikan skrip saja yang lebih kompleks dari skrip perintah **AdiRoot** atau **Ahka**, dan setiap update ini ada versi-versi yang saya rilis itu sudah stabil atau terdapat bug, mohon dimaklumi.
   *  Saya senang kalau kalian yang berkunjung di sini untuk memberikan sebuah kritik dan masukan soal bug ini agar saya dapat memperbaiki di update selanjutnya.
 
-<img src="images/injectwithwin.jpg" alt="Injecting with PC (Windows Platform)" width="20%"/>  <img src="images/injectwithlinux.jpg" alt="Injecting with PC (Linux Platform)" width="28%"/>
+<img src="images/injectwithwin.jpg" alt="Injecting with PC (Windows Platform)" width="20%"/>  <img src="images/injectwithlinux.jpg" alt="Injecting with PC (Linux Platform)" width="28%"/>  <img src="images/injectwithandroid.jpg" alt="Injecting with Smartphone (Android Platform)" width="25%"/>
 
 ## Download:
 Dibawah ini merupakan versi paling baru setiap saya mengupload. Silakan pilih sesuai dengan platform kalian masing-masing:
@@ -30,6 +30,7 @@ Apabila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan fil
 |:-------------------:| ------------------------------------------------------------------------------------ |
 | Versi               | Minimal: 5.0.0 Lollipop<br/>Rekomendasi: 9.0 Pie                                     |
 | Kernel              | Linux versi 3.0                                                                      |
+| Prosesor            | 64-bit ARM architecture                                                              |
 | Magisk              | [Versi 19.00 keatas](https://github.com/topjohnwu/magisk/releases)                   |
 | Modules             | [ADB and Fastboot for Android NDK](https://github.com/Magisk-Modules-Repo/adb-ndk)   |
 | Misc.               | *  Terpasang Terminal Emulator atau Termux<br/>*  Mendukung USB OTG pada smartphone  |
@@ -39,7 +40,7 @@ Apabila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan fil
 |:-------------------:| ------------------------------------------------------------------------------------------------------------ |
 | Distribusi          | *  Debian/Ubuntu<br/>*  RedHat Enterprise Linux/CentOS<br/>*  Fedora<br/>*  Arch Linux<br/>*  OpenSUSE/SLES  |
 | Kernel              | Linux versi 4.4                                                                                              |
-| Prosesor            | 64-bit (x86_64/amd64)                                                                                        |
+| Prosesor            | 64-bit Intel/AMD architecture                                                                                |
 
 ### Windows
 | Yang dibutuhkan     | Keterangan                                                                                                                                      |
@@ -86,7 +87,7 @@ lalu jalankan perintahnya beserta file update.zip nya.
 #### Windows
 
 Buka Command Prompt atau PowerShell di menu Start. Lalu masuk ke direktori tempat skrip **inject-win.bat** berada, jalankan dengan ketik:
-```cmd
+```cmd.exe
 .\inject-win.bat "<path file update.zip>"
 ```
 
@@ -119,12 +120,12 @@ bash <(wget -qO- https://bit.ly/injectscript_linux) -Q
 #### Windows (Command Prompt - Wajib terupdate Windows PowerShell versi 4.0 keatas)
 
 Bila komputer anda berada di versi Windows 7 SP1
-```cmd
+```cmd.exe
 powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
 & ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
 Sedangkan di Windows 8 keatas
-```cmd
+```cmd.exe
 powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
 ```
 
@@ -166,15 +167,19 @@ $PREFIX/bash <($PREFIX/wget -qO- https://bit.ly/injectscript_android) --readme
 ```
 atau
 ```bash
+bash inject-linux.sh --readme
+```
+atau
+```bash
 bash <(wget -qO- https://bit.ly/injectscript_linux) --readme
 ```
 
 #### Windows
-```cmd
+```cmd.exe
 .\inject-win.bat --readme
 ```
 atau
-```cmd
+```cmd.exe
 powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
 & ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
 ```
@@ -193,6 +198,11 @@ atau
 
 
 ## Changelog:
+### v1.5.1
+  1.  Pembaharuan minor
+  1.  Tambahan output untuk menerangkan bila perintah online berjalan
+  1.  Tambahan baris skrip apabila komputer sudah terdapat paket program Android SDK Platform Tools (Linux dan Windows)
+  1.  Perubahan pesan dialog (Linux)
 ### v1.5.0
   1.  Penambahan perintah baru **--download-adb** untuk mengunduh ADB dari repositori Magisk Modules 'ADB and Fastboot for Android NDK' secara permanen 'ditaruh ke /data/local/bin dan tidak dapat dieksekusikan dari luar skrip' (Android)
   1.  Perbaikan baris skrip di perintah online (Android)

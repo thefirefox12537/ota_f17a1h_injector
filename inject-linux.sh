@@ -36,8 +36,8 @@ Additional arguments are maybe to know:
 
 README()
 {
-    README="Untuk mengaktifkan mode USB debugging pada Haier F17A1H
-sebagai berikut:
+    README="Untuk mengaktifkan mode USB debugging pada Haier
+F17A1H sebagai berikut:
 
   *   Dial ke nomor *#*#83781#*#*
   *   Masuk ke slide 2 (DEBUG&LOG).
@@ -60,20 +60,19 @@ Jika masih tidak aktif, ada cara lain sebagai berikut:
 
 Tinggal jalankan skrip ini dengan membuka Command
 Prompt, dan jalankan adb start-server maka akan muncul
-popup izinkan sambung USB Debugging di Haier F17A1H."
-
-    [ "$DIALOG" == "kdialog" ] && {
-        $DIALOG --title "Read-Me" --msgbox "$README"
-        $DIALOG --title "Read-Me" --msgbox "Special thanks to:
+popup izinkan sambung USB Debugging di Haier F17A1H.
+"
+    THANKS="Special thanks to:
    1.  Adi Subagja
    2.  Ahka
    3.  dan developer-developer Andromax Prime"
-    } || \
-    echo -e "$README\n\n
-Special thanks to:
-   < Adi Subagja >
-   < Ahka >
-   < dan developer-developer Andromax Prime >" | more
+
+    [ "$DIALOG" = "kdialog" ] && {
+        echo -e "$README" > /var/tmp/readme.txt
+        $DIALOG --title "Read-Me" --textbox /var/tmp/readme.txt 392 360
+        $DIALOG --title "Read-Me" --msgbox "$THANKS"
+        rm /var/tmp/readme.txt > /dev/null 2>&1
+    } || echo -e "$README\n\n$THANKS" | more
     exit 1
 }
 
@@ -88,30 +87,18 @@ kill-adb() {
 }
 
 remove-temporary() {
-    [[ "$run_temporary" ]] && {
+    [ ! -z "$run_temporary" ] && {
         echo "Removing temporary program files..."
         "$ADBDIR/adb" kill-server
         rm "$ADBDIR/adb" > /dev/null 2>&1
     }
 }
 
-
-[[ "$0" = "/dev/fd/"* ]] && \
-echo "Running online script mode..."
-
-## Set dialog screen program
-for d in dialog whiptail kdialog
-do command -v $d > /dev/null 2>&1 && DIALOG="$d"
-done
-
-[ -z "$DIALOG" ] && {
-    echo -e "This script requirements dialog box, one of which:
-
-   dialog
-   whiptail
-   kdialog\n"
-    exit 1
+pause() {
+    echo -n "Press any key to continue..."
+    read -srn1; echo
 }
+
 
 [ -e /etc/os-release ] && \
 . /etc/os-release 2> /dev/null || \
@@ -136,6 +123,20 @@ done
     exit 1
 }
 
+## Set dialog screen program
+for d in dialog whiptail
+do command -v $d > /dev/null 2>&1 && DIALOG="$d"
+done
+[ ! -z "$DISPLAY" ] && \
+command -v kdialog > /dev/null 2>&1 && DIALOG="kdialog"
+
+for a in '/dev' '/proc/self'
+do [[ "$0" = "$a/fd/"* ]] && {
+    echo "Running online script mode..."
+    break
+}
+done
+
 case $1 in
     "--help" | "-h" )
         USAGE ;;
@@ -156,36 +157,53 @@ esac
 ## Main Menu
 [[ "$1" ]] && {
     [ -z "$FILE" ] && {
+        [ "$DIALOG" = "kdialog" ] && \
+        $DIALOG --error "File not found." || \
         echo "File not found."
         exit 1
     }
 
     [ "$EXTENSION" != "zip" ] && {
+        [ "$DIALOG" = "kdialog" ] && \
+        $DIALOG --error "File is not ZIP type." || \
         echo "File is not ZIP type."
         exit 1
     }
 
-    for d in dialog whiptail
-    do [ "$DIALOG" == "$d" ] && YESNO_LABEL="--yes-button Ya --no-button Tidak"
-    done
+    [ "$DIALOG" = "kdialog" ] && \
+    YESNO_LABEL="--yes-label Ya --no-label Tidak" || \
+    YESNO_LABEL="--yes-button Ya --no-button Tidak"
 
-    [ "$DIALOG" == "kdialog" ] && YESNO_LABEL="--yes-label Ya --no-label Tidak"
-
-    ( $DIALOG                    \
-      --yesno                    \
+    [ ! -z "$DIALOG" ] && {
+        ( $DIALOG                    \
+          --yesno                    \
 "Anda yakin? File yang dipilih:
-$FULLPATH"                       \
-     9 63                        \
-     $YESNO_LABEL                \
-      3>&1 1>&2 2>&3
-    ) || exit 1
+$FULLPATH"                           \
+         9 63                        \
+         $YESNO_LABEL                \
+          3>&1 1>&2 2>&3
+        ) || exit 1
+    } || {
+        echo -ne "File yang dipilih: \n$FULLPATH \nAnda yakin? "
+        while true
+        do
+            read -srn1 YN
+            echo
+            case $YN in
+                [Yy]* )
+                    break ;;
+                [Nn]* )
+                    exit 1 ;;
+                * )
+                    echo -ne "Anda yakin? " ;;
+            esac
+        done
+    }
 } || USAGE
 
 ## NOTE
-$DIALOG                                                      \
---title "NOTE:  Harap baca dahulu sebelum eksekusi"          \
---msgbox                                                     \
-" *  Harap aktifkan mode USB Debugging terlebih dahulu sebelum
+TITLE_NOTE="NOTE:  Harap baca dahulu sebelum eksekusi"
+NOTE=" *  Harap aktifkan mode USB Debugging terlebih dahulu sebelum
     mengeksekusi inject update.zip [ Untuk mengetahui bagaimana
     cara mengaktifkan mode USB debugging, dengan mengetik ]:
        $0 --readme
@@ -196,29 +214,46 @@ Perlu diperhatikan:
    Segala kerusakan/apapun yang terjadi itu diluar tanggung
    jawab pembuat file ini serta tidak ada kaitannya dengan
    pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
-   update secara daring melalui updater resmi." 11 63
+   update secara daring melalui updater resmi.
+"
+[ ! -z "$DIALOG" ] && {
+    $DIALOG                 \
+    --title "$TITLE_NOTE"   \
+    --msgbox "$NOTE" 11 63
+} || {
+    echo -ne "$TITLE_NOTE\n\n$NOTE"
+    pause
+}
 
 ## Checking ADB programs
 echo "Checking ADB program..."
 
 ## Downloading ADB programs if not exist
-[ ! -e "$ADBDIR/adb" ] && {
-    echo "Downloading Android SDK Platform Tools..."
-    wget -qO \
-      "/var/tmp/platform-tools.zip" \
-      https://dl.google.com/android/repository/platform-tools-latest-linux.zip
-    echo "Extracting Android SDK Platform Tools..."
-    unzip \
-      -qo "/var/tmp/platform-tools.zip" platform-tools/adb \
-      -d "/var/tmp/"
-    mv "/var/tmp/platform-tools/adb" "$ADBDIR/" >/dev/null 2>&1
-    rm -rf "/var/tmp/platform-tools" >/dev/null 2>&1
-    rm "/var/tmp/platform-tools.zip" >/dev/null 2>&1
-    [ ! -e "$ADBDIR/adb" ] && {
-        echo "Failed getting ADB program. Please try again, make sure your network connected."
-        exit 1
-    } || echo "ADB program was successfully placed."
-} || echo "ADB program was availabled on the computer or this folder."
+while true
+do
+    [[ ! "$run_temporary" && -e $(command -v adb) ]] && {
+        echo "ADB program was availabled on the computer."
+        ADBDIR="$(dirname "$(command -v adb)")"
+        break
+    } || [ ! -e "$ADBDIR/adb" ] && {
+        echo "Downloading Android SDK Platform Tools..."
+        wget -qO \
+          "/var/tmp/platform-tools.zip" \
+          https://dl.google.com/android/repository/platform-tools-latest-linux.zip
+        echo "Extracting Android SDK Platform Tools..."
+        unzip \
+          -qo "/var/tmp/platform-tools.zip" platform-tools/adb \
+          -d "/var/tmp/"
+        mv "/var/tmp/platform-tools/adb" "$ADBDIR/" >/dev/null 2>&1
+        rm -rf "/var/tmp/platform-tools" >/dev/null 2>&1
+        rm "/var/tmp/platform-tools.zip" >/dev/null 2>&1
+        [ ! -e "$ADBDIR/adb" ] && {
+            echo "Failed getting ADB program. Please try again, make sure your network connected."
+            exit 1
+        } || echo "ADB program was successfully placed."
+    } || echo "ADB program was availabled on the computer or this folder."
+    break
+done
 
 ## Starting ADB service
 start-adb
@@ -230,14 +265,17 @@ sleep 1; echo "Please plug USB to your devices."
 
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
-FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
-    [ "$DIALOG" == "kdialog" ] && \
-    echo "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
-    $DIALOG -msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
+for FOTA_DEVICE in "$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null)"
+do [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
+    [ ! -z "$DIALOG" ] && {
+        [ "$DIALOG" = "kdialog" ] && \
+        $DIALOG --error "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
+        $DIALOG --msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
+    } || echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     remove-temporary
     exit 1
 }
+done
 
 ## Activating airplane mode
 echo "Activating airplane mode..."
@@ -290,9 +328,14 @@ done
 }
 
 ## Complete
-[ "$DIALOG" == "kdialog" ] && \
-$DIALOG --msgbox "Proses telah selesai" || \
-$DIALOG --msgbox "\n           Proses telah selesai" 8 48
+[ ! -z "$DIALOG" ] && {
+    [ "$DIALOG" = "kdialog" ] && \
+    $DIALOG --msgbox "Proses telah selesai" || \
+    $DIALOG --msgbox "\n           Proses telah selesai" 8 48
+} || {
+    echo "Proses telah selesai"
+    pause
+}
 kill-adb
 remove-temporary
 

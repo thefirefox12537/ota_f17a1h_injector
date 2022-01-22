@@ -41,8 +41,8 @@ Additional arguments are maybe to know:
 
 README()
 {
-    echo -e "Untuk mengaktifkan mode USB debugging pada Haier F17A1H
-sebagai berikut:
+    echo -e "Untuk mengaktifkan mode USB debugging pada Haier
+F17A1H sebagai berikut:
 
   *   Dial ke nomor *#*#83781#*#*
   *   Masuk ke slide 2 (DEBUG&LOG).
@@ -86,7 +86,7 @@ kill-adb() {
 }
 
 remove-temporary() {
-    [[ "$run_temporary" ]] && {
+    [ ! -z "$run_temporary" ] && {
         echo "Removing temporary program files..."
         "$ADBDIR/adb" kill-server
         for i in adb adb.bin adb.bin-armeabi
@@ -101,43 +101,20 @@ pause() {
 }
 
 
-case $1 in
-    "--help" | "-h" )
-        USAGE ;;
-    "--readme" )
-        README ;;
-    "--run-temporary" | "-Q" )
-        [ ! -d "/data/local/tmp" ] && \
-        mkdir "/data/local/tmp" > /dev/null 2>&1
-        ADBDIR="/data/local/tmp"
-        run_temporary=1
-        [[ "$0" = "/dev/fd/"* ]] && \
-        echo "Running online script mode in temporary command..."
-        ;;
-    "--download-adb" | "-a" )
-        [ ! -d "/data/local/bin" ] && \
-        mkdir "/data/local/bin" > /dev/null 2>&1
-        ADBDIR="/data/local/bin"
-        [[ "$0" == "/dev/fd/"* ]] && \
-        echo "Running online script mode..."
-        ;;
-    * )
-        [[ "$0" == "/dev/fd/"* ]] && \
-        echo "Running online script..."
-        ;;
-esac
-
 [[ $ID -ne 0 ]] && {
     echo "This script only allow in root mode."
     exit 1
 }
-
 [[ $(getprop ro.build.version.sdk) -lt 21 ]] && {
     echo "This script cannot be run in older Android version."
     exit 1
 }
 [[ $(uname -sr) < "Linux 3"* ]] && {
     echo "This script requires at least Linux Kernel version 3.0."
+    exit 1
+}
+[[ $(getprop ro.product.cpu.abi) != "arm64"* ]] && {
+    echo "This script requires a 64-bit Operating System."
     exit 1
 }
 [ ! -e "$MAGISK" ] && {
@@ -152,7 +129,7 @@ case $1 in
             exit 1
         }
         for split in $(printf "${PATH//:/$'\n'}")
-        do [ "$split" == "$PREFIX/bin" ] && TERMUX_ENV=1
+        do [ "$split" = "$PREFIX/bin" ] && TERMUX_ENV=1
         done
         [ -z $TERMUX_ENV ] && PATH="$PREFIX/bin:$PATH"
         command -v wget > /dev/null 2>&1 || {
@@ -164,6 +141,34 @@ case $1 in
         ;;
 esac
 
+for a in '/dev' '/proc/self'
+do [[ "$0" = "$a/fd/"* ]] && {
+    [[ "$run_temporary" ]] && \
+    echo "Running online script mode in temporary command..." || \
+    echo "Running online script mode..."
+    break
+}
+done
+
+case $1 in
+    "--help" | "-h" )
+        USAGE ;;
+    "--readme" )
+        README ;;
+    "--run-temporary" | "-Q" )
+        [ ! -d "/data/local/tmp" ] && \
+        mkdir "/data/local/tmp" > /dev/null 2>&1
+        ADBDIR="/data/local/tmp"
+        run_temporary=1
+        ;;
+    "--download-adb" | "-a" )
+        [ ! -d "/data/local/bin" ] && \
+        mkdir "/data/local/bin" > /dev/null 2>&1
+        ADBDIR="/data/local/bin"
+        ;;
+    * )
+        ;;
+esac
 
 ## Main Menu
 [[ "$1" ]] && {
@@ -213,11 +218,13 @@ pause
 
 ## Checking ADB programs
 echo "Checking ADB program..."
+
+## Downloading ADB programs if not exist
 case $1 in
     "--run-temporary" | "--download-adb" | "-Q" | "-a" )
         [ ! -e "$ADBDIR/adb" ] && {
             echo "Downloading 'ADB and Fastboot for Android NDK' from Magisk Modules Repository..."
-            for i in adb adb.bin adb.bin-armeabi
+            for i in adb adb.bin
             do
                 wget -qO \
                   "$ADBDIR/$i" \
@@ -231,9 +238,10 @@ case $1 in
         ;;
     * )
         [ -d "$ADBDIR" ] && {
-            [ -e "$ADBDIR/bin/adb" ] && ADBDIR="$ADBDIR/bin"
-            [ -e "$ADBDIR/system/bin/adb" ] && ADBDIR="$ADBDIR/system/bin"
             echo "ADB program was availabled on this device."
+            for d in "$ADBDIR/bin" "$ADBDIR/system/bin"
+            do [ -e "$d/adb" ] && ADBDIR="$d"
+            done
         } || {
             echo -e "ADB program cannot be found on this device. \nMake sure 'ADB and Fastboot for Android NDK' Magisk Modules already installed."
             exit 1
@@ -252,12 +260,13 @@ echo "Connected."
 
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
-FOTA_DEVICE="$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null | grep "F17A1H")"
-[ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
+for FOTA_DEVICE in "$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null)"
+do [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
     remove-temporary
     exit 1
 }
+done
 
 ## Activating airplane mode
 echo "Activating airplane mode..."
