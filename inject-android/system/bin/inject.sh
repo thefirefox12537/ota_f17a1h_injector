@@ -6,16 +6,17 @@
 # File bash script inject dari Faizal Hamzah
 
 for file in "$1" "$2" "$3"
-do [ -f "$file" ] && {
+do if [ -f "$file" ]
+then
     FILE="$file"
     FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
     EXTENSION="$(printf "${file##*.}" | awk '{print tolower($0)}')"
     break
-}
+fi
 done
 
-ID="$(id)"; ID="${ID%% *}"
-ID="${ID%%\(*}"; ID="${ID#*=}"
+ID=$(id); ID=${ID%% *}
+ID=${ID%%\(*}; ID=${ID#*=}
 MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
@@ -86,13 +87,14 @@ kill-adb() {
 }
 
 remove-temporary() {
-    [ ! -z "$run_temporary" ] && {
+    if [ ! -z "$run_temporary" ]
+    then
         echo "Removing temporary program files..."
         "$ADBDIR/adb" kill-server
         for i in adb adb.bin adb.bin-armeabi
         do rm "$ADBDIR/$i" > /dev/null 2>&1
         done
-    }
+    fi
 }
 
 pause() {
@@ -101,33 +103,35 @@ pause() {
 }
 
 
-[[ $ID -ne 0 ]] && {
+if [[ $ID -ne 0 ]]
+then
     echo "This script only allow in root mode."
     exit 1
-}
-[[ $(getprop ro.build.version.sdk) -lt 21 ]] && {
+elif [[ $(getprop ro.build.version.sdk) -lt 21 ]]
+then
     echo "This script cannot be run in older Android version."
     exit 1
-}
-[[ $(uname -sr) < "Linux 3"* ]] && {
+elif [[ $(uname -sr) < "Linux 3"* ]]
+then
     echo "This script requires at least Linux Kernel version 3.0."
     exit 1
-}
-[[ $(getprop ro.product.cpu.abi) != "arm64"* ]] && {
+elif [[ $(getprop ro.product.cpu.abi) != "arm64"* ]]
+then
     echo "This script requires a 64-bit Operating System."
     exit 1
-}
-[ ! -e "$MAGISK" ] && {
+elif [ ! -e "$MAGISK" ]
+then
     echo "This script requires Magisk installed."
     exit 1
-}
+fi
 case $1 in
     "--run-temporary" | "--download-adb"  | "-Q" | "-a" )
-        [ -d "/data/data/com.termux" ] && \
-        PREFIX="/data/data/com.termux/files/usr" || {
+        if [ -d "/data/data/com.termux" ]
+        then PREFIX="/data/data/com.termux/files/usr"
+        else
             echo "This script requires Termux shell installed."
             exit 1
-        }
+        fi
         for split in $(printf "${PATH//:/$'\n'}")
         do [ "$split" = "$PREFIX/bin" ] && TERMUX_ENV=1
         done
@@ -142,12 +146,13 @@ case $1 in
 esac
 
 for a in '/dev' '/proc/self'
-do [[ "$0" = "$a/fd/"* ]] && {
+do if [[ "$0" = "$a/fd/"* ]]
+then
     [[ "$run_temporary" ]] && \
     echo "Running online script mode in temporary command..." || \
     echo "Running online script mode..."
     break
-}
+fi
 done
 
 case $1 in
@@ -171,7 +176,8 @@ case $1 in
 esac
 
 ## Main Menu
-[[ "$1" ]] && {
+if [[ "$1" ]]
+then
     [ -z "$FILE" ] && {
         echo "File not found."
         exit 1
@@ -196,7 +202,8 @@ esac
                 echo -ne "Anda yakin? " ;;
         esac
     done
-} || USAGE
+else USAGE
+fi
 
 ## NOTE
 echo -ne "NOTE:  Harap baca dahulu sebelum eksekusi
@@ -222,7 +229,8 @@ echo "Checking ADB program..."
 ## Downloading ADB programs if not exist
 case $1 in
     "--run-temporary" | "--download-adb" | "-Q" | "-a" )
-        [ ! -e "$ADBDIR/adb" ] && {
+        if [ ! -e "$ADBDIR/adb" ]
+        then
             echo "Downloading 'ADB and Fastboot for Android NDK' from Magisk Modules Repository..."
             for i in adb adb.bin
             do
@@ -234,18 +242,20 @@ case $1 in
                 }
                 chmod 755 "$ADBDIR/$i" > /dev/null 2>&1
             done
-        } || echo "ADB program was successfully placed."
+        else echo "ADB program was successfully placed."
+        fi
         ;;
     * )
-        [ -d "$ADBDIR" ] && {
+        if [ -d "$ADBDIR" ]
+        then
             echo "ADB program was availabled on this device."
             for d in "$ADBDIR/bin" "$ADBDIR/system/bin"
             do [ -e "$d/adb" ] && ADBDIR="$d"
             done
-        } || {
+        else
             echo -e "ADB program cannot be found on this device. \nMake sure 'ADB and Fastboot for Android NDK' Magisk Modules already installed."
             exit 1
-        }
+        fi
         ;;
 esac
 
@@ -261,11 +271,13 @@ echo "Connected."
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
 for FOTA_DEVICE in "$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null)"
-do [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
+do if [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ]
+then
     echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    "$ADBDIR/adb" kill-server
     remove-temporary
     exit 1
-}
+fi
 done
 
 ## Activating airplane mode
@@ -313,11 +325,12 @@ do case $args in
         ;;
 esac
 done
-[[ "$NON_MARKET" ]] && {
+if [[ "$NON_MARKET" ]]
+then
     echo "Enabling install non market app..."
     "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
     "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
-}
+fi
 
 ## Complete
 echo "Proses telah selesai"

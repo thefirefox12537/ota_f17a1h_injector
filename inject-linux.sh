@@ -6,12 +6,13 @@
 # File bash script inject dari Faizal Hamzah
 
 for file in "$1" "$2" "$3"
-do [ -f "$file" ] && {
+do if [ -f "$file" ]
+then
     FILE="$file"
     FULLPATH="$(dirname "$(readlink -f "$file")")/$(basename "$file")"
     EXTENSION="$(printf "${file##*.}" | awk '{print tolower($0)}')"
     break
-}
+fi
 done
 
 ADBDIR="$(dirname "$(readlink -f "$0")")"
@@ -67,12 +68,14 @@ popup izinkan sambung USB Debugging di Haier F17A1H.
    2.  Ahka
    3.  dan developer-developer Andromax Prime"
 
-    [ "$DIALOG" = "kdialog" ] && {
+    if [ "$DIALOG" = "kdialog" ]
+    then
         echo -e "$README" > /var/tmp/readme.txt
         $DIALOG --title "Read-Me" --textbox /var/tmp/readme.txt 392 360
         $DIALOG --title "Read-Me" --msgbox "$THANKS"
         rm /var/tmp/readme.txt > /dev/null 2>&1
-    } || echo -e "$README\n\n$THANKS" | more
+    else echo -e "$README\n\n$THANKS" | more
+    fi
     exit 1
 }
 
@@ -87,11 +90,12 @@ kill-adb() {
 }
 
 remove-temporary() {
-    [ ! -z "$run_temporary" ] && {
+    if [ ! -z "$run_temporary" ]
+    then
         echo "Removing temporary program files..."
         "$ADBDIR/adb" kill-server
         rm "$ADBDIR/adb" > /dev/null 2>&1
-    }
+    fi
 }
 
 pause() {
@@ -104,24 +108,25 @@ pause() {
 . /etc/os-release 2> /dev/null || \
 . /usr/lib/os-release 2> /dev/null
 
-[[ "$ID" = "debian" || "$ID_LIKE" = *"debian"* || "$ID_LIKE" = *"ubuntu"* ]] && DIST_CORE="debian"
-[[ "$ID" = *"rhel"* || "$ID_LIKE" = *"rhel"*   || "$ID_LIKE" = "redhat"* ]] && DIST_CORE="redhat"
-[[ "$ID" = "fedora" || "$ID_LIKE" = *"fedora"* ]] && DIST_CORE="redhat_fedora"
-[[ "$ID" = *"suse"* || "$ID_LIKE" = *"suse"* ]] && DIST_CORE="suse"
-[[ "$ID" = "arch" || "$ID_LIKE" = "arch" ]] && DIST_CORE="archlinux"
+[[ "$ID" =~ "debian" || "$ID_LIKE" =~ "debian" || "$ID_LIKE" =~ "ubuntu" ]] && DIST_CORE="debian"
+[[ "$ID" =~ "rhel"   || "$ID_LIKE" =~ "rhel"   || "$ID_LIKE" =~ "redhat" ]] && DIST_CORE="redhat"
+[[ "$ID" =~ "fedora" || "$ID_LIKE" =~ "fedora" ]] && DIST_CORE="redhat_fedora"
+[[ "$ID" =~ "suse"   || "$ID_LIKE" =~ "suse"   ]] && DIST_CORE="suse"
+[[ "$ID" =~ "arch"   || "$ID_LIKE" =~ "arch"   ]] && DIST_CORE="archlinux"
 
-[[ -z "$DIST_CORE" ]] && {
+if [[ -z "$DIST_CORE" ]]
+then
     echo "This script cannot be run in this Linux distribution."
     exit 1
-}
-[[ $(uname -sr) < "Linux 4.4"* ]] && {
+elif [[ $(uname -sr) < "Linux 4.4"* ]]
+then
     echo "This script requires at least Linux Kernel version 4.4."
     exit 1
-}
-[[ $(uname -p) != *"64" ]] && {
+elif [[ $(uname -p) != *"64" ]]
+then
     echo "This script requires a 64-bit Operating System."
     exit 1
-}
+fi
 
 ## Set dialog screen program
 for d in dialog whiptail
@@ -131,10 +136,11 @@ done
 command -v kdialog > /dev/null 2>&1 && DIALOG="kdialog"
 
 for a in '/dev' '/proc/self'
-do [[ "$0" = "$a/fd/"* ]] && {
+do if [[ "$0" = "$a/fd/"* ]]
+then
     echo "Running online script mode..."
     break
-}
+fi
 done
 
 case $1 in
@@ -155,7 +161,8 @@ case $1 in
 esac
 
 ## Main Menu
-[[ "$1" ]] && {
+if [[ "$1" ]]
+then
     [ -z "$FILE" ] && {
         [ "$DIALOG" = "kdialog" ] && \
         $DIALOG --error "File not found." || \
@@ -174,7 +181,8 @@ esac
     YESNO_LABEL="--yes-label Ya --no-label Tidak" || \
     YESNO_LABEL="--yes-button Ya --no-button Tidak"
 
-    [ ! -z "$DIALOG" ] && {
+    if [ ! -z "$DIALOG" ]
+    then
         ( $DIALOG                    \
           --yesno                    \
 "Anda yakin? File yang dipilih:
@@ -183,7 +191,7 @@ $FULLPATH"                           \
          $YESNO_LABEL                \
           3>&1 1>&2 2>&3
         ) || exit 1
-    } || {
+    else
         echo -ne "File yang dipilih: \n$FULLPATH \nAnda yakin? "
         while true
         do
@@ -198,8 +206,9 @@ $FULLPATH"                           \
                     echo -ne "Anda yakin? " ;;
             esac
         done
-    }
-} || USAGE
+    fi
+else USAGE
+fi
 
 ## NOTE
 TITLE_NOTE="NOTE:  Harap baca dahulu sebelum eksekusi"
@@ -216,14 +225,15 @@ Perlu diperhatikan:
    pihak manapun. Untuk lebih aman tanpa resiko, dianjurkan
    update secara daring melalui updater resmi.
 "
-[ ! -z "$DIALOG" ] && {
+if [ ! -z "$DIALOG" ]
+then
     $DIALOG                 \
     --title "$TITLE_NOTE"   \
     --msgbox "$NOTE" 11 63
-} || {
+else
     echo -ne "$TITLE_NOTE\n\n$NOTE"
     pause
-}
+fi
 
 ## Checking ADB programs
 echo "Checking ADB program..."
@@ -231,11 +241,13 @@ echo "Checking ADB program..."
 ## Downloading ADB programs if not exist
 while true
 do
-    [[ ! "$run_temporary" && -e $(command -v adb) ]] && {
+    if [[ ! $run_temporary && -e $(command -v adb) ]]
+    then
         echo "ADB program was availabled on the computer."
         ADBDIR="$(dirname "$(command -v adb)")"
         break
-    } || [ ! -e "$ADBDIR/adb" ] && {
+    elif [ ! -e "$ADBDIR/adb" ]
+    then
         echo "Downloading Android SDK Platform Tools..."
         wget -qO \
           "/var/tmp/platform-tools.zip" \
@@ -251,7 +263,8 @@ do
             echo "Failed getting ADB program. Please try again, make sure your network connected."
             exit 1
         } || echo "ADB program was successfully placed."
-    } || echo "ADB program was availabled on the computer or this folder."
+    else echo "ADB program was availabled on the computer or this folder."
+    fi
     break
 done
 
@@ -266,15 +279,19 @@ sleep 1; echo "Please plug USB to your devices."
 ## Checking if your devices is F17A1H
 echo "Checking if your devices is F17A1H..."
 for FOTA_DEVICE in "$("$ADBDIR/adb" shell "getprop ro.fota.device" 2> /dev/null)"
-do [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ] && {
-    [ ! -z "$DIALOG" ] && {
+do if [ "${FOTA_DEVICE//$'\r'}" != "Andromax F17A1H" ]
+then
+    if [ ! -z "$DIALOG" ]
+    then
         [ "$DIALOG" = "kdialog" ] && \
         $DIALOG --error "Perangkat anda bukan Andromax Prime/Haier F17A1H" || \
         $DIALOG --msgbox "\nPerangkat anda bukan Andromax Prime/Haier F17A1H" 8 48
-    } || echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    else echo "Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    fi
+    "$ADBDIR/adb" kill-server
     remove-temporary
     exit 1
-}
+fi
 done
 
 ## Activating airplane mode
@@ -321,21 +338,23 @@ do case $args in
         ;;
 esac
 done
-[[ "$NON_MARKET" ]] && {
+if [[ "$NON_MARKET" ]]
+then
     echo "Enabling install non market app..."
     "$ADBDIR/adb" shell "settings put global install_non_market_apps 1"
     "$ADBDIR/adb" shell "settings put secure install_non_market_apps 1"
-}
+fi
 
 ## Complete
-[ ! -z "$DIALOG" ] && {
+if [ ! -z "$DIALOG" ]
+then
     [ "$DIALOG" = "kdialog" ] && \
     $DIALOG --msgbox "Proses telah selesai" || \
     $DIALOG --msgbox "\n           Proses telah selesai" 8 48
-} || {
+else
     echo "Proses telah selesai"
     pause
-}
+fi
 kill-adb
 remove-temporary
 

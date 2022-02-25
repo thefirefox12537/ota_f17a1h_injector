@@ -38,7 +38,7 @@ Apabila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan fil
 ### Linux
 | Yang dibutuhkan     | Keterangan                                                                                                   |
 |:-------------------:| ------------------------------------------------------------------------------------------------------------ |
-| Distribusi          | *  Debian/Ubuntu<br/>*  RedHat Enterprise Linux/CentOS<br/>*  Fedora<br/>*  Arch Linux<br/>*  OpenSUSE/SLES  |
+| Distribusi          | *  Debian/Ubuntu<br/>*  RedHat Enterprise Linux/CentOS/Fedora<br/>*  Arch Linux<br/>*  OpenSUSE/SLES         |
 | Kernel              | Linux versi 4.4                                                                                              |
 | Prosesor            | 64-bit Intel/AMD architecture                                                                                |
 
@@ -46,8 +46,8 @@ Apabila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan fil
 | Yang dibutuhkan     | Keterangan                                                                                                                                      |
 |:-------------------:| ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Versi               | Minimal: Windows 7 Service Pack 1<br/>Rekomendasi: Windows 10                                                                                   |
-| PowerShell          | Minimal: [Windows Module Framework versi 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)<br/>Rekomendasi: [Windows Module Framework versi 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)                                         |
 | .NET Framework      | [Versi 4.5 keatas](https://www.microsoft.com/en-us/download/details.aspx?id=30653)                                                              |
+| PowerShell          | Minimal: [Windows Module Framework versi 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)<br/>Rekomendasi: [Windows Module Framework versi 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)                                         |
 
 
 ## Cara menggunakan?
@@ -198,6 +198,10 @@ atau
 
 
 ## Changelog:
+### v1.5.2
+  1.  Pembaharuan minor kedua
+  1.  Perbaikan cek paket program Android SDK Platform Tools (Windows)
+  1.  Tambahan baris skrip mematikan service ADB saat menemui kesalahan cek perangkat Android
 ### v1.5.1
   1.  Pembaharuan minor
   1.  Tambahan output untuk menerangkan bila perintah online berjalan

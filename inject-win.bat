@@ -15,7 +15,7 @@
 @ :: Haier_F17A1H OTA Updater Injector
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         01/22/2021  7:40pm
+@ :: Date/Time Modified:         02/26/2022  5:48am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,5,1
-@ ::    Product Version:   1,5,1
+@ ::    File version:      1,5,2
+@ ::    Product Version:   1,5,2
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
 @ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.5.1
+@ ::    FileVersion:       1.5.2
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.5.1
+@ ::    ProductVersion:    1.5.2
 @ ::
 
 
@@ -56,9 +56,11 @@ goto dos
 @ SETLOCAL
 @ BREAK OFF
 
-for %%v in (Daytona Cairo Hydra Neptune NT) do ver | findstr /r /c:"%%v" > nul && if not errorlevel 1 set OLD_WINNT=1
-if "%OLD_WINNT%" == "1" goto winnt
-if not defined OLD_WINNT (setlocal EnableExtensions EnableDelayedExpansion)
+for %%v in (Daytona Cairo Hydra Neptune NT) do ^
+ver | find "%%v" > nul && ^
+if not errorlevel 1 (set "OLD_WINNT=1")
+if "%OLD_WINNT%" == "1" (goto winnt) ^
+else (setlocal EnableExtensions EnableDelayedExpansion)
 
 set "basedir=%~dp0"
 set "basedir=%basedir:~0,-1%"
@@ -88,13 +90,9 @@ if "%OLD_WIN%" == "1" (
 )
 
 for /f usebackq %%a in (`call powershell -noprofile -command ^
-$PSVersionTable.PSVersion -lt ^(New-Object Version 4,0^) 2^> nul`) do ^
-if "%%a" == "True" (set "errorcapt=Windows Module Framework (PowerShell) version 4.0")
-for /f usebackq %%a in (`call powershell -noprofile -command ^
 [System.Enum]::GetNames^([System.Net.SecurityProtocolType]^) -notcontains 'Tls12' 2^> nul`) do ^
-if "%%a" == "True" (set "errorcapt=at least .NET Framework version 4.5 and Windows Module Framework version 4.0")
-if defined errorcapt (
-    set "MESSAGE_ERROR=This script requires %errorcapt%"
+if "%%a" == "True" (
+    set "MESSAGE_ERROR=This script requires at least .NET Framework version 4.5 and Windows Module Framework version 4.0"
     goto :error
 )
 
@@ -165,12 +163,12 @@ echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
 :adbnotexist
-for /f "tokens=*" %%e in ('where adb.exe 2^> nul') do set "ADBDIR=%%~dpe"
-if not defined run_temporary (
-    if defined ADBDIR (
+if not defined run_temporary ^
+for %%e in (adb.exe) do ^
+if exist "%%~$PATH:e" (set "FOUND_ADB_PATHENV=1" && set "ADBDIR=%%~dp$PATH:e")
+if defined FOUND_ADB_PATHENV (
     echo ADB program was availabled on the computer.
     set "basedir=%ADBDIR:~0,-1%"
-    )
 ) else if not exist "%basedir%\adb.exe" (
     del /q "%temp%\platform-tools.zip" > nul 2>&1
     echo Downloading Android SDK Platform Tools...
@@ -265,8 +263,10 @@ echo Connected.
 :checkif_F17A1H
 echo Checking if your devices is F17A1H...
 for /f "tokens=*" %%d in ('call "%basedir%\adb" shell "getprop ro.fota.device" 2^> nul') do ^
-if not "%%d" == "Andromax F17A1H" (
+set "FOTA_DEVICE=%%d"
+if not "%FOTA_DEVICE%" == "Andromax F17A1H" (
     set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    call "%basedir%\adb" kill-server
     call :remove_temporary
     goto :error
 )

@@ -2,7 +2,7 @@
 #requires -version 3
 
 <#PSScriptInfo
-.VERSION 1.5.1
+.VERSION 1.5.2
 .GUID 702d7de5-2805-4d25-92fa-4aa08148b894
 .AUTHOR Faizal Hamzah
 .PROJECTURI http://github.com/thefirefox12537/ota_f17a1h_injector.git
@@ -27,7 +27,7 @@ Run inject-win.ps1 without arguments to view help usage.
 #>
 
 # Date created:   12/08/2021  4:11pm
-# Date modified:  01/22/2021  7:40pm
+# Date modified:  02/26/2022  5:48am
 
 $ErrorActionPreference = 'Stop'
 if ($IsLinux -or $IsMacOS)
