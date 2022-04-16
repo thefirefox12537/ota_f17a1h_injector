@@ -16,6 +16,7 @@ fi
 done
 
 ADBDIR="$(dirname "$(readlink -f "$0")")"
+BASEFILE="$0"
 
 USAGE()
 {

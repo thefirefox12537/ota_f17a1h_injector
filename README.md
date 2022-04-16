@@ -103,9 +103,9 @@ Apabila kalian masih awam dengan Command Prompt, kalian juga cukup bisa manfaatk
 
 #### Android (hanya bisa dijalankan di Termux)
 
-Sebelum jalankan perintah ini, pasang wget dulu `pkg install wget`, masuk `su -c $PREFIX/bin/bash`, kemudian:
+Sebelum jalankan perintah ini, pasang wget dulu `pkg install wget tsu`, masuk `tsu`, kemudian:
 ```bash
-$PREFIX/bin/bash <($PREFIX/bin/wget -qO- https://bit.ly/injectscript_android) -Q
+bash <(wget -qO- https://bit.ly/injectscript_android) -Q
 ```
 
 <img src="images/androidtermux2.jpg" alt="Run online command in Termux Android" width="30%"/>
@@ -121,12 +121,13 @@ bash <(wget -qO- https://bit.ly/injectscript_linux) -Q
 
 Bila komputer anda berada di versi Windows 7 SP1
 ```cmd.exe
-powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
-& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+powershell -command ^
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
+& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
 Sedangkan di Windows 8 keatas
 ```cmd.exe
-powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+powershell -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
 
 <img src="images/wincmd2.png" alt="Run online command in Windows Command Prompt" width="55%"/>
@@ -136,11 +137,11 @@ powershell -command ^& ([Scriptblock]::Create((New-Object Net.WebClient).Downloa
 Bila komputer anda berada di versi Windows 7 SP1
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
 Sedangkan di Windows 8 keatas
 ```powershell
-& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) -Q
+& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
 
 <img src="images/winpwsh.png" alt="Run online command in PowerShell" width="65%"/>
@@ -158,7 +159,7 @@ atau
 ```
 atau
 ```bash
-$PREFIX/bash <($PREFIX/wget -qO- https://bit.ly/injectscript_android) --readme
+bash <(wget -qO- https://bit.ly/injectscript_android) --readme
 ```
 
 #### Linux
@@ -180,13 +181,14 @@ bash <(wget -qO- https://bit.ly/injectscript_linux) --readme
 ```
 atau
 ```cmd.exe
-powershell -command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
-& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
+powershell -command ^
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
+& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
 ```
 atau
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-& ([ScriptBlock]::Create((New-Object Net.WebClient).DownloadString('https://bit.ly/injectscript_windows'))) --readme
+& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
 ```
 
 
@@ -198,6 +200,10 @@ atau
 
 
 ## Changelog:
+### v1.5.3
+  1.  Pembaharuan minor ketiga
+  1.  Tambahan baris skrip menjalankan langsung ke mode root tanpa ketik `su` atau `tsu` terlebih dahulu (Android)
+  1.  Perubahan skrip dialog pesan (Windows)
 ### v1.5.2
   1.  Pembaharuan minor kedua
   1.  Perbaikan cek paket program Android SDK Platform Tools (Windows)

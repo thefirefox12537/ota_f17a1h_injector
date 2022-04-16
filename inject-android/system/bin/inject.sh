@@ -21,6 +21,7 @@ MAGISKDIR="/data/adb"
 MAGISK="$MAGISKDIR/magisk"
 MAGISK_MODULE="$MAGISKDIR/modules"
 ADBDIR="$MAGISK_MODULE/adb-ndk"
+BASEFILE="$0"
 
 USAGE()
 {
@@ -105,9 +106,13 @@ pause() {
 
 if [[ $ID -ne 0 ]]
 then
-    echo "This script only allow in root mode."
-    exit 1
-elif [[ $(getprop ro.build.version.sdk) -lt 21 ]]
+    [[ "$run_temporary" ]] && \
+    echo "This command only allow in root mode." || \
+    exec su -c "$SHELL $BASEFILE $@"
+    exit
+fi
+
+if [[ $(getprop ro.build.version.sdk) -lt 21 ]]
 then
     echo "This script cannot be run in older Android version."
     exit 1

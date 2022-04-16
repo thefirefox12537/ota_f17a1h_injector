@@ -12,10 +12,10 @@
 
 @ ::
 @ :: inject.bat
-@ :: Haier_F17A1H OTA Updater Injector
+@ :: OTA Haier F17A1H/Andromax Prime Injector Tool
 @ ::
 @ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         02/26/2022  5:48am
+@ :: Date/Time Modified:         04/17/2022  4:10am
 @ :: Operating System Created:   Windows 10 Pro
 @ ::
 @ :: This script created by:
@@ -25,15 +25,15 @@
 @ ::
 @ :: VersionInfo:
 @ ::
-@ ::    File version:      1,5,2
-@ ::    Product Version:   1,5,2
+@ ::    File version:      1,5,3
+@ ::    Product Version:   1,5,3
 @ ::
 @ ::    CompanyName:       The Firefox Flasher
-@ ::    FileDescription:   Haier_F17A1H OTA Updater Injector
-@ ::    FileVersion:       1.5.2
+@ ::    FileDescription:   OTA Haier F17A1H/Andromax Prime Injector Tool
+@ ::    FileVersion:       1.5.3
 @ ::    InternalName:      inject
 @ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.5.2
+@ ::    ProductVersion:    1.5.3
 @ ::
 
 
@@ -64,6 +64,7 @@ else (setlocal EnableExtensions EnableDelayedExpansion)
 
 set "basedir=%~dp0"
 set "basedir=%basedir:~0,-1%"
+set "TITLE=OTA Haier F17A1H/Andromax Prime Injector Tool"
 
 for %%x in (%1 %2 %3) do ^
 if exist %%x (set "FILE=%%x" && set "FULLPATH=%%~dpfx" && set "EXTENSION=%%~xx")
@@ -77,21 +78,21 @@ call set "EXTENSION=%%EXTENSION:!_from!=!_to!%%"
 :: Checking your system if approriate with requirements
 :: Please wait at the moments.
 :gettingrequire
+for %%a in (6.0 5.3 5.2 5.1 5.10 5.0 5.00) do ^
 for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') do ^
 if "%%v.%%w" == "6.1" (if %%x LEQ 7600 (set "OLD_WIN=1")) else ^
-if "%%v.%%w" == "6.0"  (set "OLD_WIN=1") else ^
-if "%%v.%%w" == "5.3"  (set "OLD_WIN=1") else ^
-if "%%v.%%w" == "5.2"  (set "OLD_WIN=1") else ^
-if "%%w.%%x" == "5.1"  (set "OLD_WIN=1") else ^
-if "%%w.%%x" == "5.00" (set "OLD_WIN=1")
+if "%%v.%%w" == "%%a"  (set "OLD_WIN=1") else ^
+if "%%w.%%x" == "%%a"  (set "OLD_WIN=1")
 if "%OLD_WIN%" == "1" (
     set "MESSAGE_ERROR=This script requires Windows 7 Service Pack 1 or latest"
     goto :error
 )
 
-for /f usebackq %%a in (`call powershell -noprofile -command ^
-[System.Enum]::GetNames^([System.Net.SecurityProtocolType]^) -notcontains 'Tls12' 2^> nul`) do ^
-if "%%a" == "True" (
+set "ProtocolType=Net.SecurityProtocolType"
+for /f usebackq %%a in (`
+call powershell.exe -noprofile -c ^
+[Enum]::GetNames^([%ProtocolType%]^) -notcontains [%ProtocolType%]::Tls12 2^> nul
+`) do if "%%a" == "True" (
     set "MESSAGE_ERROR=This script requires at least .NET Framework version 4.5 and Windows Module Framework version 4.0"
     goto :error
 )
@@ -125,40 +126,42 @@ call :wscript dialog.vbs
     echo WScript.Echo MsgBox^( _
     echo   "Anda yakin? File yang dipilih:"  + vbCrLf + _
     echo   "%FULLPATH%", _
-    echo   vbYesNo, _
-    echo   "Inject Andromax Prime" _
+    echo   4+32, _
+    echo   "%TITLE%" _
     echo ^)
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
 )
 for /f %%i in ('call cscript "%temp%\dialog.vbs" //nologo //e:vbscript') do set ret=%%i
-del /q "%temp%\dialog.vbs" > nul 2>&1
 if %ret% EQU 7 goto end_of_exit
 
 :: NOTE
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo WScript.Quit MsgBox^( _
-    echo   "  *   Harap aktifkan mode USB Debugging terlebih dahulu sebelum"  + vbCrLf + _
-    echo   "       mengeksekusi inject update.zip [Untuk mengetahui bagaimana cara"  + vbCrLf + _
-    echo   "       mengaktifkan mode USB debugging, dengan mengetik]:"  + vbCrLf + _
+    echo MsgBox _
+    echo   "  *   Harap aktifkan mode USB Debugging terlebih dahulu"  + vbCrLf + _
+    echo   "       sebelum mengeksekusi inject update.zip [Untuk"  + vbCrLf + _
+    echo   "       mengetahui bagaimana cara mengaktifkan mode USB"  + vbCrLf + _
+    echo   "       debugging, dengan mengetik]:" + vbCrLf + _
     echo   vbCrLf + _
     echo   "             %~nx0 --readme" + vbCrLf + _
     echo   vbCrLf + _
-    echo   "  *   Apabila HP terpasang kartu SIM, skrip ini akan terotomatis"  + vbCrLf + _
-    echo   "       mengaktifkan mode Pesawat."  + vbCrLf + _
+    echo   "  *   Apabila HP terpasang kartu SIM, skrip ini akan"  + vbCrLf + _
+    echo   "       terotomatis mengaktifkan mode Pesawat."  + vbCrLf + _
     echo   vbCrLf + _
-    echo   "NOTE:"  + vbTab +  "Harap baca dahulu sebelum eksekusi. Segala kerusakan/"  + vbCrLf + _
-    echo              vbTab +  "apapun yang terjadi itu diluar tanggung jawab pembuat file"  + vbCrLf + _
-    echo              vbTab +  "ini serta tidak ada kaitannya dengan pihak manapun. Untuk"  + vbCrLf + _
-    echo              vbTab +  "lebih aman tanpa resiko, dianjurkan update secara"  + vbCrLf + _
-    echo              vbTab +  "daring melalui updater resmi.", _
-    echo   vbOKOnly _
-    echo ^)
+    echo   "NOTE:"  + vbTab +  "Harap baca dahulu sebelum eksekusi. Segala"  + vbCrLf + _
+    echo              vbTab +  "kerusakan/apapun yang terjadi itu diluar tanggung"  + vbCrLf + _
+    echo              vbTab +  "jawab pembuat file ini serta tidak ada kaitannya"  + vbCrLf + _
+    echo              vbTab +  "dengan pihak manapun. Untuk lebih aman tanpa"  + vbCrLf + _
+    echo              vbTab +  "resiko, dianjurkan update secara daring melalui"  + vbCrLf + _
+    echo              vbTab +  "updater resmi.", _
+    echo   0+0+48
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
 )
 call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :: Checking ADB programs
 :checkadb
+set "repos=https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip"
 echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
@@ -171,22 +174,15 @@ if defined FOUND_ADB_PATHENV (
     set "basedir=%ADBDIR:~0,-1%"
 ) else if not exist "%basedir%\adb.exe" (
     del /q "%temp%\platform-tools.zip" > nul 2>&1
-    echo Downloading Android SDK Platform Tools...
-    call powershell -noprofile -command ^
-    if ^([System.Environment]::OSVersion.Version -lt ^(New-Object Version 6,2^)^) ^
-    {[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12}; ^
-    ^(New-Object System.Net.WebClient^).DownloadFile^( ^
-      'https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip', ^
-      '%temp%\platform-tools.zip' ^
-    ^)
-
-    echo Extracting Android SDK Platform Tools...
-    call powershell -noprofile -command ^
-    Add-Type -Assembly System.IO.Compression.FileSystem; ^
-    [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
-      '%temp%\platform-tools.zip', ^
-      '%temp%\' ^
-    ^)
+    call powershell.exe -noprofile -c ^
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
+    [void]^(Add-Type -AssemblyName 'System.IO.Compression.FileSystem'^); ^
+    ^
+    echo 'Downloading Android SDK Platform Tools...'; ^
+    [void]^(New-Object Net.WebClient^).DownloadFile^('%repos%','%temp%\platform-tools.zip'^); ^
+    ^
+    echo 'Extracting Android SDK Platform Tools...'; ^
+    [void][IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\platform-tools.zip','%temp%\'^)
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d" (
     for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\" > nul 2>&1
     rd /s /q "%temp%\%%d" > nul 2>&1
@@ -195,13 +191,13 @@ if defined FOUND_ADB_PATHENV (
     set ADB_SUCCESS=1
 ) else (echo ADB program was availabled on the computer or this folder.)
 
-if defined ADB_SUCCESS ^
-if not exist "%basedir%\adb.exe" (
-    echo Failed getting ADB program. Please try again, make sure your network connected.
-    @ goto :eof
-) else (echo ADB program was successfully placed.)
+if defined ADB_SUCCESS (
+    if not exist "%basedir%\adb.exe" (echo Failed getting ADB program. Please try again. && @ goto :eof) ^
+    else (echo ADB program was successfully placed. && goto :checkadbdriver)
+)
 
 :checkadbdriver
+set "repos=https://dl.google.com/android/repository/latest_usb_driver_windows.zip"
 echo Checking ADB Interface driver installed...
 
 :: Downloading ADB Interface driver
@@ -209,42 +205,35 @@ echo Checking ADB Interface driver installed...
 where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     del /q "%temp%\usb_driver.zip" > nul 2>&1
-    echo Downloading ADB Interface driver...
-    call powershell -noprofile -command ^
-    if ^([System.Environment]::OSVersion.Version -lt ^(New-Object Version 6,2^)^) ^
-    {[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12}; ^
-    ^(New-Object System.Net.WebClient^).DownloadFile^( ^
-      'https://dl.google.com/android/repository/latest_usb_driver_windows.zip', ^
-      '%temp%\usb_driver.zip' ^
-    ^)
-
-    echo Extracting ADB Interface driver...
-    call powershell -noprofile -command ^
-    Add-Type -Assembly System.IO.Compression.FileSystem; ^
-    [System.IO.Compression.ZipFile]::ExtractToDirectory^( ^
-      '%temp%\usb_driver.zip', ^
-      '%temp%\' ^
-    ^)
-
-    echo Installing driver...
-    call powershell -noprofile -command ^
-    Start-Process pnputil.exe ^
-      -Wait -WindowStyle hidden -Verb runas ^
-      -ArgumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
+    call powershell.exe -noprofile -c ^
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
+    [void]^(Add-Type -AssemblyName 'System.IO.Compression.FileSystem'^); ^
+    ^
+    echo 'Downloading ADB Interface driver...'; ^
+    [void]^(New-Object Net.WebClient^).DownloadFile^('%repos%','%temp%\usb_driver.zip'^); ^
+    ^
+    echo 'Extracting ADB Interface driver...'; ^
+    [void][IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\usb_driver.zip','%temp%\'^); ^
+    ^
+    echo 'Installing driver...'; ^
+    start pnputil.exe ^
+      -wait -windowstyle hidden -verb runas ^
+      -argumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
 
     rd /s /q "%temp%\usb_driver" > nul 2>&1
     del /q "%temp%\usb_driver.zip" > nul 2>&1
     set DRIVER_SUCCESS=1
 ) else (echo Driver already installed.)
 
-set "commands=call powershell -noprofile -command "pnputil.exe -e ^| ^
-Select-String -Context 1 'Driver package provider :\s+ Google, Inc.' ^| ^
-foreach{^($_.Context.PreContext[0] -split ' : +'^)[1]}""
-if defined DRIVER_SUCCESS for /f usebackq %%a in (`%commands%`) do ^
-if not exist %SystemRoot%\inf\%%a (
-    echo Failed installing driver. Please try again.
-    @ goto :eof
-) else (echo Driver successfully installed.)
+set "driverpkg='Driver package provider :\s+ Google, Inc.'"
+if defined DRIVER_SUCCESS (
+    for /f usebackq %%a in (`
+    call powershell.exe -noprofile -c ^
+    $^(^( pnputil.exe -e ^| sls -Context 1 %driverpkg%^).Context.PreContext[0] -split ' : +'^)[1]
+    `) do set "oemdriver=%%a"
+    if not exist %SystemRoot%\inf\%oemdriver% (echo Failed installing driver. Please try again. && @ goto :eof) ^
+    else (echo Driver successfully installed. && goto :start_adb)
+)
 
 :: Starting ADB service
 :start_adb
@@ -317,9 +306,11 @@ if defined NON_MARKET (
 )
 
 :: Complete
-> "%temp%\dialog.vbs" (echo WScript.Quit MsgBox^("Proses telah selesai", vbOKOnly^))
+> "%temp%\dialog.vbs" (
+    echo MsgBox "Proses telah selesai", vbOKOnly
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
+)
 call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-del /q "%temp%\dialog.vbs" > nul 2>&1
 
 :kill_adb
 echo Killing ADB services...
@@ -356,7 +347,7 @@ if defined run_temporary (
 :README
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo WScript.Quit MsgBox^( _
+    echo MsgBox _
     echo   "Untuk mengaktifkan mode USB debugging pada Haier F17A1H"  + vbCrLf + _
     echo   "sebagai berikut:"  + vbCrLf + _
     echo   vbCrLf + _
@@ -382,24 +373,19 @@ call :wscript dialog.vbs
     echo   "Tinggal jalankan skrip ini dengan membuka Command"  + vbCrLf + _
     echo   "Prompt, dan jalankan adb start-server maka akan muncul"  + vbCrLf + _
     echo   "popup izinkan sambung USB Debugging di Haier F17A1H.", _
-    echo   vbOKOnly, _
-    echo   "Read-Me" _
-    echo ^)
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-> "%temp%\dialog.vbs" (
-    echo WScript.Quit MsgBox^( _
+    echo   0+0+0, _
+    echo   "%TITLE%:   Read-Me"
+    echo MsgBox _
     echo   "Special thanks to:"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "    1.   Adi Subagja"  + vbCrLf + _
     echo   "    2.   Ahka"  + vbCrLf + _
     echo   "    3.   dan developer-developer Andromax Prime", _
-    echo   vbOKOnly, _
-    echo   "Read-Me" _
-    echo ^)
+    echo   0+0+0, _
+    echo   "%TITLE%:   Read-Me"
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
 )
 call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
@@ -407,33 +393,38 @@ call :end_of_exit
 :USAGE
 call :wscript dialog.vbs
 >> "%temp%\dialog.vbs" (
-    echo WScript.Quit MsgBox^( _
+    echo MsgBox _
     echo   "Inject update.zip for Haier F17A1H"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "USAGE:  %~nx0 <update.zip file>"  + vbCrLf + _
     echo   vbCrLf + _
     echo   "Additional arguments are maybe to know:"  + vbCrLf + _
-    echo   "   -a, --download-adb"        + vbTab +  "Run without check ADB and Fastboot module"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "(ADB program permanently placed. Android"  + vbCrLf + _
+    echo   "   -a, --download-adb"        + vbTab +  "Run without check ADB and"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "Fastboot module (ADB program"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "permanently placed. Android"  + vbCrLf + _
     echo                    vbTab + vbTab + vbTab +  "only use)."  + vbCrLf + _
-    echo   "   -h, --help"        + vbTab + vbTab +  "Show help information for this script."  + vbCrLf + _
+    echo   "   -h, --help"        + vbTab + vbTab +  "Show help information for this"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "script."  + vbCrLf + _
     echo   "   -n, --non-market"  + vbTab + vbTab +  "Inject with install non market."  + vbCrLf + _
-    echo   "   -Q, --run-temporary"       + vbTab +  "Run without check ADB and Fastboot module"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "(ADB program not permanently placed)."  + vbCrLf + _
+    echo   "   -Q, --run-temporary"       + vbTab +  "Run without check ADB and"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "Fastboot module"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "(ADB program not permanently"  + vbCrLf + _
+    echo                    vbTab + vbTab + vbTab +  "placed)."  + vbCrLf + _
     echo   "   --readme"          + vbTab + vbTab +  "Show read-me (advanced help).", _
-    echo   vbOKOnly, _
-    echo   "Usage" _
-    echo ^)
+    echo   0+0+64, _
+    echo   "%TITLE%:   Usage"
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
 )
 call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
 :error
-> "%temp%\dialog.vbs" (echo Wsh.Quit MsgBox^("%MESSAGE_ERROR%", vbCritical^))
+> "%temp%\dialog.vbs" (
+    echo MsgBox "%MESSAGE_ERROR%", 0+0+16
+    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
+)
 call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
-del /q "%temp%\dialog.vbs" > nul 2>&1
 call :end_of_exit
 @ goto :eof
 
