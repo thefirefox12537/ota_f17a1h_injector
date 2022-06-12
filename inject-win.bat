@@ -1,167 +1,91 @@
+<# :
 @ ECHO OFF
-@ GOTO STARTSCRIPT
-
-@ ::
-@ :: Microsoft Windows(R) Command Script
-@ :: Copyright (c) 1990-2020 Microsoft Corp. All rights reserved.
-@ ::
-
-@ ::
-@ :: DETAILS
-@ ::
-
-@ ::
-@ :: inject.bat
-@ :: OTA Haier F17A1H/Andromax Prime Injector Tool
-@ ::
-@ :: Date/Time Created:          01/26/2021  1:30pm
-@ :: Date/Time Modified:         04/17/2022  4:10am
-@ :: Operating System Created:   Windows 10 Pro
-@ ::
-@ :: This script created by:
-@ ::   Faizal Hamzah
-@ ::   The Firefox Flasher
-@ ::
-@ ::
-@ :: VersionInfo:
-@ ::
-@ ::    File version:      1,5,3
-@ ::    Product Version:   1,5,3
-@ ::
-@ ::    CompanyName:       The Firefox Flasher
-@ ::    FileDescription:   OTA Haier F17A1H/Andromax Prime Injector Tool
-@ ::    FileVersion:       1.5.3
-@ ::    InternalName:      inject
-@ ::    OriginalFileName:  inject.bat
-@ ::    ProductVersion:    1.5.3
-@ ::
-
-
-
-::BEGIN
-
-:STARTSCRIPT
-if "%OS%" == "Windows_NT" goto runwinnt
-
-:runos2
-ver | find "Operating System/2" > nul
-if not errorlevel 1 goto win9xos2
-
-:rundoswin
-if exist %windir%\..\msdos.sys find "WinDir" %windir%\..\msdos.sys > nul
-if not errorlevel 1 goto win9xos2
-goto dos
-
-:runwinnt
-@ SETLOCAL
 @ BREAK OFF
+@ SETLOCAL
 
 for %%v in (Daytona Cairo Hydra Neptune NT) do ^
 ver | find "%%v" > nul && ^
-if not errorlevel 1 (set "OLD_WINNT=1")
-if "%OLD_WINNT%" == "1" (goto winnt) ^
-else (setlocal EnableExtensions EnableDelayedExpansion)
+if not errorlevel 1 set OLD_WIN=1
+if %OLD_WIN%? == 1? (goto winnt) ^
+else (SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION)
 
-set "basedir=%~dp0"
-set "basedir=%basedir:~0,-1%"
-set "TITLE=OTA Haier F17A1H/Andromax Prime Injector Tool"
-
-for %%x in (%1 %2 %3) do ^
-if exist %%x (set "FILE=%%x" && set "FULLPATH=%%~dpfx" && set "EXTENSION=%%~xx")
-set "_UPPERCASE=ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-set "_LOWERCASE=abcdefghijklmnopqrstuvwxyz"
-for /l %%a in (0,1,25) do ^
-call set "_from=%%_UPPERCASE:~%%a,1%%" && ^
-call set "_to=%%_LOWERCASE:~%%a,1%%" && ^
-call set "EXTENSION=%%EXTENSION:!_from!=!_to!%%"
-
-:: Checking your system if approriate with requirements
-:: Please wait at the moments.
-:gettingrequire
-for %%a in (6.0 5.3 5.2 5.1 5.10 5.0 5.00) do ^
 for /f "tokens=4-7 delims=[.NT] " %%v in ('ver') do ^
-if "%%v.%%w" == "6.1" (if %%x LEQ 7600 (set "OLD_WIN=1")) else ^
-if "%%v.%%w" == "%%a"  (set "OLD_WIN=1") else ^
-if "%%w.%%x" == "%%a"  (set "OLD_WIN=1")
-if "%OLD_WIN%" == "1" (
-    set "MESSAGE_ERROR=This script requires Windows 7 Service Pack 1 or latest"
+for %%a in (6.0 5.4 5.3 5.2 5.1 5.10 5.0 5.00) do (
+    if /i "%%v.%%w" == "6.1" if /i %%x LSS 7601  (set OLD_WIN=1)
+    if /i "%%v.%%w" == "%%a"  (set OLD_WIN=1)
+    if /i "%%w.%%x" == "%%a"  (set OLD_WIN=1)
+)
+
+set args=%*
+set basefile=%~nx0
+set basedir=%~dp0
+set basedir=%basedir:~0,-1%
+set basestring=${%~sf0}^| Out-String
+set TITLE=OTA Haier F17A1H/Andromax Prime Injector Tool
+
+for %%x in (%args%) do ^
+if exist "%%~x" (set "FILE=%%~x" && set "FULLPATH=%%~dpfx" && set "EXTENSION=%%~xx")
+
+:: Checking your system if Windows Module Framework (PowerShell) availabled.
+for %%p in ("powershell.exe") do ^
+if not exist "%%~$PATH:p" (goto :nopwsh) ^
+else (set psshell=%%~p)
+
+:: Checking your system if approriate with requirements. Please wait at the moments.
+:gettingrequire
+if %OLD_WIN%? == 1? (
+    set MESSAGE_ERROR=This script requires Windows 7 Service Pack 1 or latest
     goto :error
 )
 
-set "ProtocolType=Net.SecurityProtocolType"
 for /f usebackq %%a in (`
-call powershell.exe -noprofile -c ^
-[Enum]::GetNames^([%ProtocolType%]^) -notcontains [%ProtocolType%]::Tls12 2^> nul
-`) do if "%%a" == "True" (
-    set "MESSAGE_ERROR=This script requires at least .NET Framework version 4.5 and Windows Module Framework version 4.0"
+call %psshell% -noprofile -nologo -c ^
+[Enum]::GetNames^([Net.SecurityProtocolType]^) -notcontains [Net.SecurityProtocolType]::Tls12 2^> nul
+`) do if /i "%%a" == "True" (
+    set MESSAGE_ERROR=This script requires at least .NET Framework version 4.5 and Windows Module Framework version 4.0
     goto :error
 )
 
 if exist "%temp%\run_online.tmp" echo Running online script mode...
 
-if %1!==! goto USAGE
-if %1!==--readme! goto README
-for %%p in (-h --help) do ^
-if %1!==%%p! goto USAGE
-for %%p in (-Q --run-temporary) do ^
-if %1!==%%p! (set "basedir=%temp%" && set "run_temporary=1")
-for %%p in (-a --download-adb) do ^
-if %1!==%%p! (set "MESSAGE_ERROR=You cannot run this argument in Windows." && goto :error)
+if %*! == ! goto USAGE
+for %%x in (%args%) do (
+    if %%~x! == --readme! goto README
+    for %%p in (-h --help) do ^
+    if %%~x! == %%p! goto USAGE
+    for %%p in (-Q --run-temporary) do ^
+    if %%~x! == %%p! (set "basedir=%temp%" && set "run_temporary=1")
+    for %%p in (-a --download-adb) do ^
+    if %%~x! == %%p! (
+    set MESSAGE_ERROR=You cannot run this argument in Windows.
+    goto :error
+   )
+)
 
 if not defined FILE (
-    set "MESSAGE_ERROR=File not found."
+    set MESSAGE_ERROR=File not found.
     goto :error
 )
 
-if not "%EXTENSION:~1%" == "zip" (
-    set "MESSAGE_ERROR=File is not ZIP type."
+if /i not "%EXTENSION%" == ".zip" (
+    set MESSAGE_ERROR=File is not ZIP type.
     goto :error
 )
 
 :: Main Menu
-set "FILE=%FILE:"=%"
-set "FULLPATH=%FULLPATH:"=""%"
-call :wscript dialog.vbs
->> "%temp%\dialog.vbs" (
-    echo WScript.Echo MsgBox^( _
-    echo   "Anda yakin? File yang dipilih:"  + vbCrLf + _
-    echo   "%FULLPATH%", _
-    echo   4+32, _
-    echo   "%TITLE%" _
-    echo ^)
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-for /f %%i in ('call cscript "%temp%\dialog.vbs" //nologo //e:vbscript') do set ret=%%i
-if %ret% EQU 7 goto end_of_exit
+call :setnewline
+set MESSAGE_QUEST=Anda yakin? File yang dipilih:%_N%%FULLPATH%
+for /f usebackq %%i in (`
+call %psshell% -noprofile -nologo -c "iex (%basestring%); Question-Dialog"
+`) do set ret=%%i
+if /i "%ret%" == "No" goto end_of_exit
 
 :: NOTE
-call :wscript dialog.vbs
->> "%temp%\dialog.vbs" (
-    echo MsgBox _
-    echo   "  *   Harap aktifkan mode USB Debugging terlebih dahulu"  + vbCrLf + _
-    echo   "       sebelum mengeksekusi inject update.zip [Untuk"  + vbCrLf + _
-    echo   "       mengetahui bagaimana cara mengaktifkan mode USB"  + vbCrLf + _
-    echo   "       debugging, dengan mengetik]:" + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "             %~nx0 --readme" + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "  *   Apabila HP terpasang kartu SIM, skrip ini akan"  + vbCrLf + _
-    echo   "       terotomatis mengaktifkan mode Pesawat."  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "NOTE:"  + vbTab +  "Harap baca dahulu sebelum eksekusi. Segala"  + vbCrLf + _
-    echo              vbTab +  "kerusakan/apapun yang terjadi itu diluar tanggung"  + vbCrLf + _
-    echo              vbTab +  "jawab pembuat file ini serta tidak ada kaitannya"  + vbCrLf + _
-    echo              vbTab +  "dengan pihak manapun. Untuk lebih aman tanpa"  + vbCrLf + _
-    echo              vbTab +  "resiko, dianjurkan update secara daring melalui"  + vbCrLf + _
-    echo              vbTab +  "updater resmi.", _
-    echo   0+0+48
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+call %psshell% -noprofile -nologo -c "iex (%basestring%); Note-Dialog"
 
 :: Checking ADB programs
 :checkadb
-set "repos=https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip"
+set repos=https://dl.google.com/android/repository/platform-tools_r28.0.1-windows.zip
 echo Checking ADB program...
 
 :: Downloading ADB programs if not exist
@@ -171,18 +95,16 @@ for %%e in (adb.exe) do ^
 if exist "%%~$PATH:e" (set "FOUND_ADB_PATHENV=1" && set "ADBDIR=%%~dp$PATH:e")
 if defined FOUND_ADB_PATHENV (
     echo ADB program was availabled on the computer.
-    set "basedir=%ADBDIR:~0,-1%"
+    set basedir=%ADBDIR:~0,-1%
 ) else if not exist "%basedir%\adb.exe" (
     del /q "%temp%\platform-tools.zip" > nul 2>&1
-    call powershell.exe -noprofile -c ^
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-    [void]^(Add-Type -AssemblyName 'System.IO.Compression.FileSystem'^); ^
-    ^
-    echo 'Downloading Android SDK Platform Tools...'; ^
-    [void]^(New-Object Net.WebClient^).DownloadFile^('%repos%','%temp%\platform-tools.zip'^); ^
-    ^
-    echo 'Extracting Android SDK Platform Tools...'; ^
-    [void][IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\platform-tools.zip','%temp%\'^)
+    echo Downloading Android SDK Platform Tools...
+    call %psshell% -noprofile -nologo -c ^
+    "iex (%basestring%); Download-Manager -Uri '%repos%' -Target '%temp%\platform-tools.zip'"
+
+    echo Extracting Android SDK Platform Tools...
+    call %psshell% -noprofile -nologo -c ^
+    "iex (%basestring%); Extract-Zip -ZipFile '%temp%\platform-tools.zip' -DestinationPath '%temp%\'"
     for %%d in (platform-tools android-sdk\platform-tools) do if exist "%temp%\%%d" (
     for %%f in (adb.exe AdbWinApi.dll AdbWinUsbApi.dll) do move "%temp%\%%d\%%f" "%basedir%\" > nul 2>&1
     rd /s /q "%temp%\%%d" > nul 2>&1
@@ -192,12 +114,17 @@ if defined FOUND_ADB_PATHENV (
 ) else (echo ADB program was availabled on the computer or this folder.)
 
 if defined ADB_SUCCESS (
-    if not exist "%basedir%\adb.exe" (echo Failed getting ADB program. Please try again. && @ goto :eof) ^
-    else (echo ADB program was successfully placed. && goto :checkadbdriver)
+    if not exist "%basedir%\adb.exe" (
+    echo Failed getting ADB program. Please try again.
+    @ goto :eof
+    ) else (
+    echo ADB program was successfully placed.
+    goto :checkadbdriver
+    )
 )
 
 :checkadbdriver
-set "repos=https://dl.google.com/android/repository/latest_usb_driver_windows.zip"
+set repos=https://dl.google.com/android/repository/latest_usb_driver_windows.zip
 echo Checking ADB Interface driver installed...
 
 :: Downloading ADB Interface driver
@@ -205,34 +132,38 @@ echo Checking ADB Interface driver installed...
 where /r "%SystemRoot%\system32\DriverStore\FileRepository" android_winusb.inf > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     del /q "%temp%\usb_driver.zip" > nul 2>&1
-    call powershell.exe -noprofile -c ^
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
-    [void]^(Add-Type -AssemblyName 'System.IO.Compression.FileSystem'^); ^
-    ^
-    echo 'Downloading ADB Interface driver...'; ^
-    [void]^(New-Object Net.WebClient^).DownloadFile^('%repos%','%temp%\usb_driver.zip'^); ^
-    ^
-    echo 'Extracting ADB Interface driver...'; ^
-    [void][IO.Compression.ZipFile]::ExtractToDirectory^('%temp%\usb_driver.zip','%temp%\'^); ^
-    ^
-    echo 'Installing driver...'; ^
-    start pnputil.exe ^
-      -wait -windowstyle hidden -verb runas ^
-      -argumentList '-i -a "%temp%\usb_driver\android_winusb.inf"'
+    echo Downloading ADB Interface driver...
+    call %psshell% -noprofile -nologo -c ^
+    "iex (%basestring%); Download-Manager -Uri '%repos%' -Target '%temp%\usb_driver.zip'"
+
+    echo Extracting ADB Interface driver...
+    call %psshell% -noprofile -nologo -c ^
+    "iex (%basestring%); Extract-Zip -ZipFile '%temp%\usb_driver.zip' -DestinationPath '%temp%\'"
+
+    echo Installing driver...
+    call %psshell% -noprofile -nologo -c ^
+    start -filepath pnputil.exe ^
+    -argumentlist '-i -a "%temp%\usb_driver\android_winusb.inf"' ^
+    -wait -windowstyle hidden -verb runas
 
     rd /s /q "%temp%\usb_driver" > nul 2>&1
     del /q "%temp%\usb_driver.zip" > nul 2>&1
     set DRIVER_SUCCESS=1
 ) else (echo Driver already installed.)
 
-set "driverpkg='Driver package provider :\s+ Google, Inc.'"
+set driverpkg='Driver package provider :\s+ Google, Inc.'
 if defined DRIVER_SUCCESS (
     for /f usebackq %%a in (`
-    call powershell.exe -noprofile -c ^
-    $^(^( pnputil.exe -e ^| sls -Context 1 %driverpkg%^).Context.PreContext[0] -split ' : +'^)[1]
-    `) do set "oemdriver=%%a"
-    if not exist %SystemRoot%\inf\%oemdriver% (echo Failed installing driver. Please try again. && @ goto :eof) ^
-    else (echo Driver successfully installed. && goto :start_adb)
+    call %psshell% -noprofile -nologo -c ^
+    $(^( pnputil.exe -e ^^^| sls -Context 1 %driverpkg%^).Context.PreContext[0] -split ' : +'^)[1]
+    `) do set oemdriver=%%a
+    if not exist %SystemRoot%\inf\%oemdriver% (
+    echo Failed installing driver. Please try again.
+    @ goto :eof
+    ) else (
+    echo Driver successfully installed.
+    goto :start_adb
+    )
 )
 
 :: Starting ADB service
@@ -254,7 +185,7 @@ echo Checking if your devices is F17A1H...
 for /f "tokens=*" %%d in ('call "%basedir%\adb" shell "getprop ro.fota.device" 2^> nul') do ^
 set "FOTA_DEVICE=%%d"
 if not "%FOTA_DEVICE%" == "Andromax F17A1H" (
-    set "MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H"
+    set MESSAGE_ERROR=Perangkat anda bukan Andromax Prime/Haier F17A1H
     call "%basedir%\adb" kill-server
     call :remove_temporary
     goto :error
@@ -290,15 +221,15 @@ call "%basedir%\adb" shell "input keyevent 23" > nul 2>&1
 :updating
 echo Updating...
 call "%basedir%\adb" shell "am start -n com.smartfren.fota/com.adups.fota.FotaInstallDialogActivity"
-for /l %%a in (1,1,20) do ^
+for /l %%a in (1,1,25) do ^
 call "%basedir%\adb" shell "input keyevent 20" > nul 2>&1
 call "%basedir%\adb" shell "input keyevent 23" > nul 2>&1
 call timeout /nobreak /t 10 > nul 2>&1
 call "%basedir%\adb" wait-for-device > nul 2>&1
 
-for %%x in (%1 %2 %3) do ^
+for %%x in (%args%) do ^
 for %%p in (-n --non-market) do ^
-if %%x!==%%p! set "NON_MARKET=1"
+if %%~x! == %%p! set NON_MARKET=1
 if defined NON_MARKET (
     echo Enabling install non market app...
     call "%basedir%\adb" shell "settings put global install_non_market_apps 1"
@@ -306,11 +237,8 @@ if defined NON_MARKET (
 )
 
 :: Complete
-> "%temp%\dialog.vbs" (
-    echo MsgBox "Proses telah selesai", vbOKOnly
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+set MESSAGE_INFORM=Proses telah selesai
+call %psshell% -noprofile -nologo -c "iex (%basestring%); Information-Dialog"
 
 :kill_adb
 echo Killing ADB services...
@@ -331,131 +259,223 @@ if defined run_temporary (
 )
 @ goto :eof
 
-:wscript
-> "%temp%\%1" (
-    echo '
-    echo ' Copyright ^(c^) Microsoft Corporation.  All rights reserved.
-    echo '
-    echo ' VBScript Source File
-    echo '
-    echo ' Script Name: %1
-    echo '
-    echo.
-)
-@ goto :eof
 
 :README
-call :wscript dialog.vbs
->> "%temp%\dialog.vbs" (
-    echo MsgBox _
-    echo   "Untuk mengaktifkan mode USB debugging pada Haier F17A1H"  + vbCrLf + _
-    echo   "sebagai berikut:"  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "  *   Dial ke nomor *#*#83781#*#*"  + vbCrLf + _
-    echo   "  *   Masuk ke slide 2 (DEBUG&LOG)."  + vbCrLf + _
-    echo   "  *   Pilih 'Design For Test'."  + vbCrLf + _
-    echo   "  *   Pilih 'CMCC', lalu tekan OK."  + vbCrLf + _
-    echo   "  *   Pilih 'MTBF'." + vbCrLf  + _
-    echo   "  *   Lalu pilih 'MTBF Start'."  + vbCrLf + _
-    echo   "  *   Tunggu beberapa saat."  + vbCrLf + _
-    echo   "  *   Pilih 'Confirm'."  + vbCrLf + _
-    echo   "  *   Kalau sudah mulai ulang/restart HP nya."  + vbCrLf + _
-    echo   "  *   Selamat USB debugging telah aktif."  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   vbCrLf + _
-    echo   "Jika masih tidak aktif, ada cara lain sebagai berikut:"  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "  *   Dial ke nomor *#*#257384061689#*#*"  + vbCrLf + _
-    echo   "  *   Aktifkan 'USB Debugging'."  + vbCrLf + _
-    echo   "  *   Izinkan aktifkan USB Debugging pada popupnya."  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   vbCrLf + _
-    echo   "Tinggal jalankan skrip ini dengan membuka Command"  + vbCrLf + _
-    echo   "Prompt, dan jalankan adb start-server maka akan muncul"  + vbCrLf + _
-    echo   "popup izinkan sambung USB Debugging di Haier F17A1H.", _
-    echo   0+0+0, _
-    echo   "%TITLE%:   Read-Me"
-    echo MsgBox _
-    echo   "Special thanks to:"  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "    1.   Adi Subagja"  + vbCrLf + _
-    echo   "    2.   Ahka"  + vbCrLf + _
-    echo   "    3.   dan developer-developer Andromax Prime", _
-    echo   0+0+0, _
-    echo   "%TITLE%:   Read-Me"
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+call %psshell% -noprofile -nologo -c "iex (%basestring%); ReadMe-Dialog"
 call :end_of_exit
 @ goto :eof
 
-
 :USAGE
-call :wscript dialog.vbs
->> "%temp%\dialog.vbs" (
-    echo MsgBox _
-    echo   "Inject update.zip for Haier F17A1H"  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "USAGE:  %~nx0 <update.zip file>"  + vbCrLf + _
-    echo   vbCrLf + _
-    echo   "Additional arguments are maybe to know:"  + vbCrLf + _
-    echo   "   -a, --download-adb"        + vbTab +  "Run without check ADB and"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "Fastboot module (ADB program"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "permanently placed. Android"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "only use)."  + vbCrLf + _
-    echo   "   -h, --help"        + vbTab + vbTab +  "Show help information for this"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "script."  + vbCrLf + _
-    echo   "   -n, --non-market"  + vbTab + vbTab +  "Inject with install non market."  + vbCrLf + _
-    echo   "   -Q, --run-temporary"       + vbTab +  "Run without check ADB and"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "Fastboot module"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "(ADB program not permanently"  + vbCrLf + _
-    echo                    vbTab + vbTab + vbTab +  "placed)."  + vbCrLf + _
-    echo   "   --readme"          + vbTab + vbTab +  "Show read-me (advanced help).", _
-    echo   0+0+64, _
-    echo   "%TITLE%:   Usage"
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+call %psshell% -noprofile -nologo -c "iex (%basestring%); Usage-Dialog"
 call :end_of_exit
 @ goto :eof
 
 :error
-> "%temp%\dialog.vbs" (
-    echo MsgBox "%MESSAGE_ERROR%", 0+0+16
-    echo CreateObject^("Scripting.FileSystemObject"^).DeleteFile "%temp%\dialog.vbs"
-)
-call cscript "%temp%\dialog.vbs" //nologo //e:vbscript
+call %psshell% -noprofile -nologo -c "iex (%basestring%); Error-Dialog"
 call :end_of_exit
 @ goto :eof
 
 
-:dos
-echo This program cannot be run in DOS mode.
-@ GOTO ENDSCRIPT
+:setnewline
+set _=^
+%=Do not remove this line%
 
-:win9xos2
-echo This script requires Microsoft Windows NT.
-@ GOTO ENDSCRIPT
+set _N=^^^%_%%_%^%_%%_%
+@ goto :eof
+
+
+:nopwsh
+if %OLD_WIN%? == 1? goto winnt
+echo This script requires Windows Module Framework (PowerShell).
+@ goto :end_of_exit
 
 :winnt
 echo This script requires a newer version of Windows NT.
+@ goto end_of_exit
 
 :end_of_exit
 @ ENDLOCAL
-@ GOTO ENDSCRIPT
-
-:: END
+@ EXIT /B > NUL
 
 
+::
+:: DETAILS
+::
 
-@ ::
-@ :: COMMENTS
-@ ::
-@ :: Inject update.zip script - Andromax Prime F17A1H
-@ ::
-@ :: File update.zip dan batch script inject root dari Adi Subagja
-@ :: Modifikasi batch script inject dari Faizal Hamzah
-@ ::
+::
+:: inject.bat
+:: OTA Haier F17A1H/Andromax Prime Injector Tool
+::
+:: Date/Time Created:          01/26/2021  1:30pm
+:: Date/Time Modified:         06/12/2022  4:50pm
+:: Operating System Created:   Windows 10 Pro
+::
+:: This script created by:
+::   Faizal Hamzah
+::   The Firefox Flasher
+::
+::
+:: VersionInfo:
+::
+::    File version:      2,0,0
+::    Product Version:   2,0,0
+::
+::    CompanyName:       The Firefox Flasher
+::    FileDescription:   OTA Haier F17A1H/Andromax Prime Injector Tool
+::    FileVersion:       2.0.0
+::    InternalName:      inject
+::    OriginalFileName:  inject.bat
+::    ProductVersion:    2.0.0
+::
 
-:ENDSCRIPT
-@ ECHO ON
+
+::
+:: COMMENTS
+::
+
+::
+:: Inject update.zip script - Andromax Prime F17A1H
+::
+:: File update.zip dan batch script inject root dari Adi Subagja
+:: Modifikasi batch script inject dari Faizal Hamzah
+::
+#>
+
+
+[void](Add-Type -AssemblyName "System.Windows.Forms")
+[void][Windows.Forms.Application]::EnableVisualStyles()
+$MessageBox = New-Object Windows.Forms.Form
+$MessageBox.TopMost = $True
+
+function Download-Manager {
+    param ([string]$Uri, [string]$Target)
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [void](New-Object Net.WebClient).DownloadFile($Uri, $Target)
+}
+
+function Extract-Zip {
+    param ([string]$ZipFile, [string]$DestinationPath)
+    [void](Add-Type -AssemblyName "System.IO.Compression.FileSystem")
+    [void][IO.Compression.ZipFile]::ExtractToDirectory($ZipFile, $DestinationPath)
+}
+
+function Usage-Dialog {
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox,
+    "Inject update.zip for Haier F17A1H"  + "`n" +
+    "`n" +
+    "USAGE:   ${env:basefile} <update.zip file>"  + "`n" +
+    "`n" +
+    "Additional arguments are maybe to know:"  + "`n" +
+    "   -a, --download-adb"        + "`t" +  "Run without check ADB and"  + "`n" +
+                       "`t" + "`t" + "`t" +  "Fastboot module (ADB program"  + "`n" +
+                       "`t" + "`t" + "`t" +  "permanently placed. Android"  + "`n" +
+                       "`t" + "`t" + "`t" +  "only use)."  + "`n" +
+    "   -h, --help"         + "`t" + "`t" +  "Show help information for this"  + "`n" +
+                       "`t" + "`t" + "`t" +  "script."  + "`n" +
+    "   -n, --non-market"   + "`t" + "`t" +  "Inject with install non market."  + "`n" +
+    "   -Q, --run-temporary"       + "`t" +  "Run without check ADB and"  + "`n" +
+                       "`t" + "`t" + "`t" +  "Fastboot module"  + "`n" +
+                       "`t" + "`t" + "`t" +  "(ADB program not permanently"  + "`n" +
+                       "`t" + "`t" + "`t" +  "placed)."  + "`n" +
+    "   --readme"           + "`t" + "`t" +  "Show read-me (advanced help).",
+    "${ENV:TITLE}:   Usage",
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::Information
+    )
+}
+
+function ReadMe-Dialog {
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox,
+    "Untuk mengaktifkan mode USB debugging pada Haier F17A1H"  + "`n" +
+    "sebagai berikut:"  + "`n" +
+    "`n" +
+    "  *   Dial ke nomor *#*#83781#*#*"  + "`n" +
+    "  *   Masuk ke slide 2 (DEBUG&LOG)."  + "`n" +
+    "  *   Pilih 'Design For Test'."  + "`n" +
+    "  *   Pilih 'CMCC', lalu tekan OK."  + "`n" +
+    "  *   Pilih 'MTBF'."  + "`n"  +
+    "  *   Lalu pilih 'MTBF Start'."  + "`n" +
+    "  *   Tunggu beberapa saat."  + "`n" +
+    "  *   Pilih 'Confirm'."  + "`n" +
+    "  *   Kalau sudah mulai ulang/restart HP nya."  + "`n" +
+    "  *   Selamat USB debugging telah aktif."  + "`n" +
+    "`n" +
+    "`n" +
+    "Jika masih tidak aktif, ada cara lain sebagai berikut:"  + "`n" +
+    "`n" +
+    "  *   Dial ke nomor *#*#257384061689#*#*"  + "`n" +
+    "  *   Aktifkan 'USB Debugging'."  + "`n" +
+    "  *   Izinkan aktifkan USB Debugging pada popupnya."  + "`n" +
+    "`n" +
+    "`n" +
+    "Tinggal jalankan skrip ini dengan membuka Command"  + "`n" +
+    "Prompt, dan jalankan adb start-server maka akan muncul"  + "`n" +
+    "popup izinkan sambung USB Debugging di Haier F17A1H.",
+    "${ENV:TITLE}:   Read-Me",
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::None
+    )
+
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox,
+    "Special thanks to:"  + "`n" +
+    "`n" +
+    "    1.   Adi Subagja"  + "`n" +
+    "    2.   Ahka"  + "`n" +
+    "    3.   dan developer-developer Andromax Prime",
+    "${ENV:TITLE}:   Read-Me",
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::None
+    )
+}
+
+function Note-Dialog {
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox,
+    "  *   Harap aktifkan mode USB Debugging terlebih dahulu"  + "`n" +
+    "       sebelum mengeksekusi inject update.zip [Untuk"  + "`n" +
+    "       mengetahui bagaimana cara mengaktifkan mode USB"  + "`n" +
+    "       debugging, dengan mengetik]:"  + "`n" +
+    "`n" +
+    "             ${env:basefile} --readme" + "`n" +
+    "`n" +
+    "  *   Apabila HP terpasang kartu SIM, skrip ini akan"  + "`n" +
+    "       terotomatis mengaktifkan mode Pesawat."  + "`n" +
+    "`n" +
+    "NOTE:"  + "`t" +  "Harap baca dahulu sebelum eksekusi. Segala"  + "`n" +
+               "`t" +  "kerusakan/apapun yang terjadi itu diluar tanggung"  + "`n" +
+               "`t" +  "jawab pembuat file ini serta tidak ada kaitannya"  + "`n" +
+               "`t" +  "dengan pihak manapun. Untuk lebih aman tanpa"  + "`n" +
+               "`t" +  "resiko, dianjurkan update secara daring melalui"  + "`n" +
+               "`t" +  "updater resmi.",
+    $Null,
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::Warning
+    )
+}
+
+function Error-Dialog {
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox, ${ENV:MESSAGE_ERROR}, $Null,
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::Error
+    )
+}
+
+function Information-Dialog {
+    [void][Windows.Forms.MessageBox]::Show(
+    $MessageBox, ${ENV:MESSAGE_INFORM}, $Null,
+    [Windows.Forms.MessageBoxButtons]::OK,
+    [Windows.Forms.MessageBoxIcon]::Information
+    )
+}
+
+function Question-Dialog {
+    [Windows.Forms.MessageBox]::Show(
+    $MessageBox, ${ENV:MESSAGE_QUEST}, ${ENV:TITLE},
+    [Windows.Forms.MessageBoxButtons]::YesNo,
+    [Windows.Forms.MessageBoxIcon]::Question
+    )
+}

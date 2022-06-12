@@ -10,8 +10,7 @@ Tool ini berguna bagi pengguna Haier F17A1H (Andromax Prime) yang mau di update 
 ## Download:
 Dibawah ini merupakan versi paling baru setiap saya mengupload. Silakan pilih sesuai dengan platform kalian masing-masing:
 
-  1.  [Android Platform (Magisk module zip file)](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-android.zip)
-  1.  [Android Platform (Shell script file)](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-android.sh)
+  1.  [Android Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-android.sh)
   1.  [Linux Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh)
   1.  [Windows Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat)
 
@@ -200,6 +199,11 @@ atau
 
 
 ## Changelog:
+### v2.0.0
+  1.  Peloncatan ke versi baru
+  1.  Perubahan jendela dialog pesan dari CScript/Windows Script Host ke dotNET Forms via PowerShell (Windows)
+  1.  Perubahan total kode penggabungan skrip batch dan PowerShell jadi satu/Hybrid script (Windows)
+  1.  Kini tidak mendapatkan pembaharuan module Magisk sudah saya stop, jadi kalian unduh skrip saja dan jalankan `sh <path folder>/inject-android.sh <perintah argumen/file update.zip>` (Android)
 ### v1.5.3
   1.  Pembaharuan minor ketiga
   1.  Tambahan baris skrip menjalankan langsung ke mode root tanpa ketik `su` atau `tsu` terlebih dahulu (Android)
