@@ -1,8 +1,8 @@
-#!/usr/bin/env pwsh
+#!/usr/bin/env -S pwsh -nop -nol
 #requires -version 3
 
 <#PSScriptInfo
-.VERSION 1.6.0
+.VERSION 2.0.1
 .GUID 702d7de5-2805-4d25-92fa-4aa08148b894
 .AUTHOR Faizal Hamzah
 .PROJECTURI http://github.com/thefirefox12537/ota_f17a1h_injector.git
@@ -27,32 +27,33 @@ Run inject-win.ps1 without arguments to view help usage.
 #>
 
 # Date created:   12/08/2021  4:11pm
-# Date modified:  05/13/2022  2:22am
+# Date modified:  07/03/2022 12:10am
 
-param([switch]$Help)
+$ErrorActionPreference = "Stop"
+$ArgumentList = $args
 
-$ErrorActionPreference = 'Stop'
-$Arguments = @args
+$ReqVer = New-Object Version 4,0
+$PSVersion = $PSVersionTable.PSVersion
+$Protocols = [enum]::GetNames([Net.SecurityProtocolType])
+$ProtTls12 = [Net.SecurityProtocolType]::Tls12
+$WebClient = New-Object Net.WebClient
 
-if($Help) {$Arguments = "--help"}
-
-if($IsLinux -or $IsMacOS)
-{Write-Error "This script requires Microsoft Windows Operating System."}
-if($PSVersionTable.PSVersion -lt (New-Object Version 4,0))
-{Write-Error "This script requires Windows Module Framework (PowerShell) version 4.0"}
-if([enum]::GetNames([Net.SecurityProtocolType]) -notcontains [Net.SecurityProtocolType]::Tls12)
-{Write-Error "This script requires at least .NET Framework version 4.5"}
+[string]"This script requires" | ForEach-Object {
+if($IsLinux -or $IsMacOS) {throw "$_ Microsoft Windows Operating System."}
+if($PSVersion -lt $ReqVer) {throw "$_ Windows Management Framework (PowerShell) version 4.0"}
+if($Protocols -notcontains $ProtTls12) {throw "$_ at least .NET Framework version 4.5"}
+}
 
 Write-Verbose "Changing internet security protocol..."
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = $ProtTls12
 
-Write-Verbose "Downloading OTA Haier F17A1H/Andromax Prime Injector Tool script code from GitHub repository..."
-$Site = "http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat"
+Write-Verbose "Downloading OTA Haier F17A1H/Andromax Prime Injector Tool script code from GitHub..."
+$Uri = [uri]"http://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat"
 $BatFile = "${env:temp}\inject.bat"
 $TmpFile = "${env:temp}\run_online.tmp"
-[void](New-Object Net.WebClient).DownloadFile($Site,$BatFile)
+$WebClient.DownloadFile($Uri, $BatFile) | Out-Null
 
-[void](New-Item -itemtype File -path $TmpFile -value "Run_Online")
-& cmd.exe /c call $BatFile $Arguments
+& {New-Item -itemtype File -path $TmpFile | Out-Null}
+& {cmd.exe /e:on /v:on /q /c $BatFile $ArgumentList}
 Write-Verbose "Removing temporary script..."
-$BatFile,$TmpFile | ForEach-Object {[void](Remove-Item -literalpath $_)}
+$BatFile, $TmpFile | ForEach-Object {Remove-Item -literalpath $_ | Out-Null}

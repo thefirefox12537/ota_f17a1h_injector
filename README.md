@@ -14,7 +14,7 @@ Dibawah ini merupakan versi paling baru setiap saya mengupload. Silakan pilih se
   1.  [Linux Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-linux.sh)
   1.  [Windows Platform](https://github.com/thefirefox12537/ota_f17a1h_injector/releases/latest/download/inject-win.bat)
 
-Untuk mendownload skrip di versi terdahulu, silakan cek di [sini](https://github.com/thefirefox12537/ota_f17a1h_injector/releases)
+Untuk mendownload skrip ataupun module di versi terdahulu, silakan cek di [sini](https://github.com/thefirefox12537/ota_f17a1h_injector/releases)
 
 Untuk melihat riwayat perubahan dalam setiap rilis ini, silakan klik [Changelog](https://github.com/thefirefox12537/ota_f17a1h_injector#changelog)
 
@@ -42,11 +42,12 @@ Apabila kalian ingin root Haier F17A1H (Andromax Prime), saya sudah sediakan fil
 | Prosesor            | 64-bit Intel/AMD architecture                                                                                |
 
 ### Windows
-| Yang dibutuhkan     | Keterangan                                                                                                                                      |
-|:-------------------:| ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Versi               | Minimal: Windows 7 Service Pack 1<br/>Rekomendasi: Windows 10                                                                                   |
-| .NET Framework      | [Versi 4.5 keatas](https://www.microsoft.com/en-us/download/details.aspx?id=30653)                                                              |
-| PowerShell          | Minimal: [Windows Module Framework versi 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)<br/>Rekomendasi: [Windows Module Framework versi 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)                                         |
+| Yang dibutuhkan     | Keterangan                                                                                                                                                                                                                                                                                       |
+|:-------------------:| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Versi               | Minimal:  **Windows 7 Service Pack 1**<br/>Rekomendasi:  **Windows 10**                                                                                                                                                                                                                          |
+| .NET Framework      | [Versi 4.5 keatas](https://www.microsoft.com/en-us/download/details.aspx?id=30653)                                                                                                                                                                                                               |
+| PowerShell          | Minimal:  [Windows Management Framework versi 4.0](http://web.archive.org/web/20181213045712/https://www.microsoft.com/en-us/download/details.aspx?id=40855)<br/>Rekomendasi:  [Windows Management Framework versi 5.1](https://www.microsoft.com/en-us/download/details.aspx?id=54616)          |
+| Misc.               | *  [PowerShell core](https://github.com/powershell/powershell/releases)<br/>*  [Universal C Runtime](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)                                                                   |
 
 
 ## Cara menggunakan?
@@ -60,7 +61,7 @@ inject.sh "<path file update.zip>"
 ```
 Apabila kalian tidak mau pasang module, bisa kalian pilih **shell script file** di atas, file akan terdownload di folder *Download* pada HP kalian (baik di penyimpanan Internal atau Eksternal/kartu memori SD) atau kalau kalian download di komputer, salin ke HP kalian di folder *Internal > Download*. Kemudian buka Terminal Emulator atau Termux pada HP lalu masuk ke `su` dulu dan ketik:
 ```sh
-/system/bin/sh /sdcard/Download/inject.sh "<path file update.zip>"
+/system/bin/sh /sdcard/Download/inject-android.sh "<path file update.zip>"
 ```
 
 <img src="images/androidterm.jpg" alt="Run in Android Terminal Emulator" width="25%"/>  <img src="images/androidtermux.jpg" alt="Run in Termux Android" width="25%"/>
@@ -128,6 +129,10 @@ Sedangkan di Windows 8 keatas
 ```cmd.exe
 powershell -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
+Apabila kalian sudah terpasang PowerShell core (Baik di Windows 7 atau Windows 8 keatas)
+```cmd.exe
+pwsh -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+```
 
 <img src="images/wincmd2.png" alt="Run online command in Windows Command Prompt" width="55%"/>
 
@@ -138,8 +143,8 @@ Bila komputer anda berada di versi Windows 7 SP1
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 & ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
-Sedangkan di Windows 8 keatas
-```powershell
+Sedangkan di Windows 8 keatas atau menggunakan PowerShell core
+```pwsh
 & ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
 ```
 
@@ -154,7 +159,7 @@ inject.sh --readme
 ```
 atau
 ```sh
-/system/bin/sh /sdcard/Download/inject.sh --readme
+/system/bin/sh /sdcard/Download/inject-android.sh --readme
 ```
 atau
 ```bash
@@ -189,6 +194,10 @@ atau
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 & ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
 ```
+atau
+```pwsh
+& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
+```
 
 
 ## Kontak:
@@ -199,6 +208,13 @@ atau
 
 
 ## Changelog:
+### v2.0.1
+  1.  Pembaharuan minor
+  1.  Log proses lebih dinamis pada proses pengunduhan dan cek perangkat (Linux, Android dan Windows)
+  1.  Perbaikan kesalahan perintah argumen/parameter (Linux dan Android)
+  1.  Perubahan kode dialog pesan (Windows)
+  1.  Perbaikan Hybrid script yang lebih sempurna (Windows)
+  1.  Kini kalian bisa menggunakan skrip ini dengan PowerShell core (versi 6.0 keatas) apabila kalian memilikinya **(Cek di [yang dibutuhkan](https://github.com/ota_f17a1h_injector#yang-dibutuhkan).)** (Windows)
 ### v2.0.0
   1.  Peloncatan ke versi baru
   1.  Perubahan jendela dialog pesan dari CScript/Windows Script Host ke dotNET Forms via PowerShell (Windows)
