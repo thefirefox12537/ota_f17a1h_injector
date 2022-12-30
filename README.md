@@ -105,14 +105,14 @@ Apabila kalian masih awam dengan Command Prompt, kalian juga cukup bisa manfaatk
 
 Sebelum jalankan perintah ini, pasang wget dulu `pkg install wget tsu`, masuk `tsu`, kemudian:
 ```bash
-bash <(wget -qO- https://bit.ly/injectscript_android) -Q
+bash <(wget -qO- https://bit.ly/injectroot-android) -Q
 ```
 
 <img src="images/androidtermux2.jpg" alt="Run online command in Termux Android" width="30%"/>
 
 #### Linux
 ```bash
-bash <(wget -qO- https://bit.ly/injectscript_linux) -Q
+bash <(wget -qO- https://bit.ly/injectroot-linux) -Q
 ```
 
 <img src="images/linuxterm2.png" alt="Run online command in Linux Terminal (Konsole)" width="60%"/>
@@ -123,15 +123,15 @@ Bila komputer anda berada di versi Windows 7 SP1
 ```cmd.exe
 powershell -command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
-& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+& ([Scriptblock]::Create((irm https://bit.ly/injectroot-windows))) -Q
 ```
 Sedangkan di Windows 8 keatas
 ```cmd.exe
-powershell -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+powershell -command ^& ([Scriptblock]::Create((irm https://bit.ly/injectroot-windows))) -Q
 ```
 Apabila kalian sudah terpasang PowerShell core (Baik di Windows 7 atau Windows 8 keatas)
 ```cmd.exe
-pwsh -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+pwsh -command ^& ([Scriptblock]::Create((irm https://bit.ly/injectroot-windows))) -Q
 ```
 
 <img src="images/wincmd2.png" alt="Run online command in Windows Command Prompt" width="55%"/>
@@ -141,11 +141,11 @@ pwsh -command ^& ([Scriptblock]::Create(irm https://bit.ly/injectscript_windows)
 Bila komputer anda berada di versi Windows 7 SP1
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+& ([ScriptBlock]::Create((irm https://bit.ly/injectroot-windows))) -Q
 ```
 Sedangkan di Windows 8 keatas atau menggunakan PowerShell core
 ```pwsh
-& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) -Q
+& ([ScriptBlock]::Create((irm https://bit.ly/injectroot-windows))) -Q
 ```
 
 <img src="images/winpwsh.png" alt="Run online command in PowerShell" width="65%"/>
@@ -163,7 +163,7 @@ atau
 ```
 atau
 ```bash
-bash <(wget -qO- https://bit.ly/injectscript_android) --readme
+bash <(wget -qO- https://bit.ly/injectroot-android) --readme
 ```
 
 #### Linux
@@ -176,7 +176,7 @@ bash inject-linux.sh --readme
 ```
 atau
 ```bash
-bash <(wget -qO- https://bit.ly/injectscript_linux) --readme
+bash <(wget -qO- https://bit.ly/injectroot-linux) --readme
 ```
 
 #### Windows
@@ -187,16 +187,16 @@ atau
 ```cmd.exe
 powershell -command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ;^
-& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
+& ([ScriptBlock]::Create((irm https://bit.ly/injectroot-windows))) --readme
 ```
 atau
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
+& ([ScriptBlock]::Create((irm https://bit.ly/injectroot-windows))) --readme
 ```
 atau
 ```pwsh
-& ([ScriptBlock]::Create(irm https://bit.ly/injectscript_windows)) --readme
+& ([ScriptBlock]::Create((irm https://bit.ly/injectroot-windows))) --readme
 ```
 
 
